@@ -32,3 +32,20 @@ jobs:
             **/.github/**
             **/README.md
             **/.DS_Store
+
+      - name: Smoke-Test der Live-Seite (hinter Basic-Auth, http only)
+        run: |
+          set -e
+          url="http://playground.bretzger.info/"
+          code=$(curl -s -o body.html -w "%{http_code}" \
+            --user "${{ secrets.HTTP_LOGIN }}:${{ secrets.HTTP_PASSWORD }}" \
+            --max-time 25 "$url")
+          echo "HTTP-Status: $code"
+          echo "Titel: $(grep -oE '<title>[^<]*</title>' body.html | head -1)"
+          if [ "$code" != "200" ]; then
+            echo "::warning::Live-Seite antwortete mit $code (erwartet 200)"
+          elif grep -q "memory-atlas" body.html; then
+            echo "OK: memory-atlas ist live unter $url"
+          else
+            echo "::warning::200, aber erwarteter Inhalt (memory-atlas) nicht gefunden - server-dir prüfen"
+          fi
