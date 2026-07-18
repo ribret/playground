@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B — Fokus-Explorer · memory-atlas</title>
+<link rel="stylesheet" href="/shared/theme.css">
+<style>
+  #svg { width: 100%; height: 100%; display: block; cursor: grab; }
+  .breadcrumb {
+    position: fixed; top: 64px; left: 16px; z-index: 40;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap; max-width: 60vw;
+  }
+  .breadcrumb .crumb {
+    font-size: 12px; color: var(--text-dim); background: var(--bg-elev);
+    border: 1px solid var(--border); padding: 3px 9px; border-radius: 999px; cursor: pointer;
+  }
+  .breadcrumb .crumb:hover { color: var(--text); border-color: var(--accent); }
+  .breadcrumb .sep { color: var(--text-faint); }
+  .node-g { cursor: pointer; }
+  .node-g text { font-size: 11px; fill: var(--text); pointer-events: none; paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+  .ring { fill: none; stroke: var(--border); stroke-dasharray: 3 5; opacity: .5; }
+  .link { stroke: rgba(140,150,170,0.25); fill: none; }
+  .link.focus { stroke: var(--accent); stroke-opacity: .5; }
+  .hint { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 40; color: var(--text-faint); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="breadcrumb" id="crumbs"></div>
+<div class="stage"><svg id="svg"></svg></div>
+<div class="hint">Klick auf einen Nachbarn wechselt den Fokus · Doppelklick auf Bühne = zurück zur Übersicht</div>
+
+<script src="/shared/vendor/d3.min.js"></script>
+<script src="/shared/api.js"></script>
+<script>
+(async function () {
+  const A = window.Atlas;
+  const graph = await A.api.loadGraph();
+  A.applyTypeColors(graph.meta);
+  const bar = A.buildTopbar({ title: "B — Fokus-Explorer", subtitle: "Was gehört zu diesem Gedanken?" });
+  const panel = A.buildPanel();
+  panel.querySelector(".close").addEventListener("click", () =>
+    document.querySelector(".stage").classList.remove("with-panel"));
+
+  const byId = new Map(graph.nodes.map((n) => [n.id, n]));
+  const adj = A.buildAdjacency(graph);
+  const svg = d3.select("#svg");
+  const g = svg.append("g");
+  let W = window.innerWidth, H = window.innerHeight - 52;
+
+  svg.call(d3.zoom().scaleExtent([0.3, 3]).on("zoom", (ev) => g.attr("transform", ev.transform)));
+  svg.on("dblclick.zoom", null);
+  svg.on("dblclick", () => setFocus(pickCentral()));
+
+  const path = [];      // Gedankenpfad
+  let focusId = null;
+
+  function pickCentral() {
+    // Knoten mit höchstem Grad als sinnvoller Einstieg
+    return graph.nodes.filter((n) => !n.ghost).sort((a, b) => b.degree - a.degree)[0].id;
+  }
+
+  function neighborsOf(id) {
+    return [...(adj.get(id) || [])].map((x) => byId.get(x)).filter(Boolean);
+  }
+
+  function setFocus(id, fromCrumb) {
+    if (!id || !byId.has(id)) return;
+    focusId = id;
+    if (!fromCrumb) {
+      const existing = path.indexOf(id);
+      if (existing >= 0) path.length = existing + 1;
+      else path.push(id);
+    }
+    render();
+    A.showNodeInPanel(panel, graph, byId.get(id), { onNavigate: (t) => setFocus(t.id) });
+    document.querySelector(".stage").classList.add("with-panel");
+    renderCrumbs();
+  }
+
+  function renderCrumbs() {
+    const c = d3.select("#crumbs");
+    c.html("");
+    path.forEach((id, i) => {
+      if (i > 0) c.append("span").attr("class", "sep").text("→");
+      c.append("span").attr("class", "crumb").text(byId.get(id).label)
+        .on("click", () => { path.length = i + 1; setFocus(id, true); });
+    });
+  }
+
+  function render() {
+    const cx = W / 2, cy = H / 2;
+    const focus = byId.get(focusId);
+    const ring1 = neighborsOf(focusId);
+    const ring1Set = new Set(ring1.map((n) => n.id));
+    // Ring 2: Nachbarn der Ring-1-Knoten, ohne Fokus und Ring 1
+    const ring2Map = new Map();
+    for (const n1 of ring1) {
+      for (const n2 of neighborsOf(n1.id)) {
+        if (n2.id !== focusId && !ring1Set.has(n2.id) && !ring2Map.has(n2.id))
+          ring2Map.set(n2.id, n1.id); // Anker in Ring 1
+      }
+    }
+    const ring2 = [...ring2Map.keys()].map((x) => byId.get(x));
+
+    const R1 = Math.min(W, H) * 0.22, R2 = Math.min(W, H) * 0.40;
+    const pos = new Map();
+    pos.set(focusId, { x: cx, y: cy });
+    // Ring 1 nach Typ sektorieren für ruhigere Anordnung
+    const r1sorted = [...ring1].sort((a, b) => (a.type + a.label).localeCompare(b.type + b.label));
+    r1sorted.forEach((n, i) => {
+      const ang = (i / Math.max(1, r1sorted.length)) * Math.PI * 2 - Math.PI / 2;
+      pos.set(n.id, { x: cx + Math.cos(ang) * R1, y: cy + Math.sin(ang) * R1, ang });
+    });
+    ring2.forEach((n, i) => {
+      const anchor = pos.get(ring2Map.get(n.id));
+      const baseAng = anchor && anchor.ang != null ? anchor.ang : (i / Math.max(1, ring2.length)) * Math.PI * 2;
+      const jitter = ((i % 5) - 2) * 0.09;
+      const ang = baseAng + jitter;
+      pos.set(n.id, { x: cx + Math.cos(ang) * R2, y: cy + Math.sin(ang) * R2 });
+    });
+
+    // Ringe
+    const rings = g.selectAll(".ring").data([R1, R2]);
+    rings.enter().append("circle").attr("class", "ring")
+      .merge(rings).attr("cx", cx).attr("cy", cy)
+      .transition().duration(500).attr("r", (d) => d);
+    rings.exit().remove();
+
+    // Kanten (Fokus→Ring1, Ring1→Ring2)
+    const links = [];
+    ring1.forEach((n) => links.push({ s: focusId, t: n.id, focus: true }));
+    ring2.forEach((n) => links.push({ s: ring2Map.get(n.id), t: n.id, focus: false }));
+    const lk = g.selectAll(".link").data(links, (d) => d.s + "|" + d.t);
+    lk.enter().append("path").attr("class", (d) => "link" + (d.focus ? " focus" : ""))
+      .merge(lk).transition().duration(500)
+      .attr("d", (d) => {
+        const a = pos.get(d.s), b = pos.get(d.t);
+        return `M${a.x},${a.y}L${b.x},${b.y}`;
+      });
+    lk.exit().remove();
+
+    // Knoten
+    const all = [focus, ...ring1, ...ring2];
+    const nd = g.selectAll(".node-g").data(all, (d) => d.id);
+    const enter = nd.enter().append("g").attr("class", "node-g")
+      .on("click", (ev, d) => { if (d.id !== focusId) setFocus(d.id); });
+    enter.append("circle");
+    enter.append("text");
+    const merged = enter.merge(nd);
+    merged.transition().duration(500)
+      .attr("transform", (d) => { const p = pos.get(d.id); return `translate(${p.x},${p.y})`; });
+    merged.select("circle")
+      .attr("r", (d) => d.id === focusId ? 20 : ring1Set.has(d.id) ? 11 : 6)
+      .attr("fill", (d) => A.typeColor(graph.meta, d.type))
+      .attr("stroke", (d) => d.id === focusId ? "var(--accent)" : "rgba(0,0,0,0.4)")
+      .attr("stroke-width", (d) => d.id === focusId ? 3 : 1)
+      .attr("opacity", (d) => ring2Map.has(d.id) ? 0.7 : 1);
+    merged.select("text")
+      .attr("x", (d) => d.id === focusId ? 0 : 0)
+      .attr("y", (d) => d.id === focusId ? 34 : (ring1Set.has(d.id) ? 22 : 15))
+      .attr("text-anchor", "middle")
+      .attr("font-size", (d) => d.id === focusId ? "14px" : ring1Set.has(d.id) ? "11px" : "9px")
+      .attr("fill", (d) => ring2Map.has(d.id) ? "var(--text-dim)" : "var(--text)")
+      .text((d) => d.label.length > 28 ? d.label.slice(0, 27) + "…" : d.label);
+    nd.exit().remove();
+  }
+
+  window.addEventListener("resize", () => { W = window.innerWidth; H = window.innerHeight - 52; render(); });
+  A.initSearch(bar, graph, (n) => setFocus(n.id));
+  A.buildHud(`${graph.meta.counts.nodes} Knoten · Fokus + 2 Ringe`);
+  setFocus(pickCentral());
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Was herauskam · memory-atlas</title>
+<link rel="stylesheet" href="/shared/theme.css">
+<link rel="stylesheet" href="assets/bericht.css">
+</head>
+<body>
+<div class="rbar">
+  <a class="brand" href="index.html"><span class="glyph">🧭</span><b>memory-atlas</b><span>Projektbericht</span></a>
+  <div class="spacer"></div>
+  <nav>
+    <a href="index.html">Überblick</a>
+    <a href="methodik.html">Wie Claude vorgeht</a>
+    <a href="laeufe.html">Die Läufe</a>
+    <a href="ergebnisse.html" class="here">Was herauskam</a>
+  </nav>
+  <a class="exit" href="/">← zu den Prototypen</a>
+</div>
+
+<div class="wrap wide">
+  <div class="hero rise">
+    <div class="kicker"><b>Kapitel 3</b> · die Ergebnisse</div>
+    <h1>Was herauskam</h1>
+    <p class="lead">Die wissenschaftliche Kernaussage lässt sich in einem Satz sagen: Für 200 bis 500 Notizen am Bildschirm gewinnt ein <b>räumlich stabiles 2D-Layout</b>, und ein vollständiger Netzwerk-Überblick („Hairball") ist die schwächste Wahl. Darunter alle Belege, sauber nach Sicherheitsgrad getrennt.</p>
+  </div>
+
+  <div class="cards three rise d1">
+    <div class="card" style="cursor:default"><span class="tag" style="color:var(--ok,#67e8c3)">Ebene A · verifiziert</span><h3>Adversarial bestätigt</h3><p>Claim hat den Angriff mehrerer Prüfer überstanden, Primärquelle mit wörtlichem Beleg. Belastbar.</p></div>
+    <div class="card" style="cursor:default"><span class="tag" style="color:#ffd479">Ebene B · unverifiziert</span><h3>Extrahiert, Prüfung offen</h3><p>Aus Primärquelle gezogen, aber die adversariale Prüfung fehlt (oder fiel am Limit aus). Als Hypothese behandeln.</p></div>
+    <div class="card" style="cursor:default"><span class="tag" style="color:var(--warn)">Widerlegt</span><h3>Aktiv gekippt</h3><p>Der Gegenbeweis-Versuch war erfolgreich. Der Claim fliegt raus, auch wenn Claude ihn selbst aufgestellt hatte.</p></div>
+  </div>
+
+  <div class="eyebrow rise d1"><span class="n">Claim-Explorer</span> Alle geprüften Behauptungen, filterbar, mit Zitat und Quelle zum Aufklappen</div>
+  <div class="filterbar rise d1" id="claimfilter">
+    <span class="fl-label">Filter</span>
+    <button class="fchip on" data-filter="all">Alle</button>
+    <button class="fchip" data-filter="ok">nur bestätigt</button>
+    <button class="fchip" data-filter="bad">nur widerlegt</button>
+    <button class="fchip" data-filter="run2">Lauf 2</button>
+    <button class="fchip" data-filter="run1">Lauf 1</button>
+  </div>
+  <div class="rise d1" id="claims"></div>
+
+  <div class="eyebrow rise d1"><span class="n">Die offene Front</span> Theme D · Wissenslandkarten (t-SNE / UMAP)</div>
+  <div class="callout warn rise d1">
+    <span class="lab">Ebene B · gut bequellt, adversariale Prüfung steht aus</span>
+    <p>Der dritte Lauf hat diese Aussagen mit Primärquellen extrahiert, doch das Session-Limit verhinderte die Verifikation. Sie sind fachlich etabliert und konvergent über mehrere Quellen, gelten hier aber formal als unbestätigt, bis die Prüfung nachgeholt ist.</p>
+  </div>
+  <div class="rise d1" id="themed"></div>
+
+  <div class="eyebrow rise d1"><span class="n">Übersetzung</span> Was die Evidenz für die fünf Prototypen bedeutet</div>
+  <div class="tbl-scroll rise d1">
+  <table class="verdict">
+    <thead><tr><th>Prototyp</th><th>Verdikt der Evidenz</th></tr></thead>
+    <tbody>
+      <tr><td><b>A · Cluster-Karte</b></td><td>Stark gestützt, <b>aber</b>: nur mit eingefrorenem Layout, Community-Hüllen und ausgedünnten/gebündelten Kanten. Als reiner Gesamt-Überblick ab ~20 Knoten unterlegen.</td></tr>
+      <tr><td><b>B · Fokus-Explorer</b></td><td class="win">Am direktesten gestützt. Kontext-Subgraph statt Übersicht ist die kanonische Antwort auf den Hairball (van Ham &amp; Perer, Furnas).</td></tr>
+      <tr><td><b>C · Gedächtnisstrom</b></td><td>Gestützt: zeitliche Landmarks beschleunigen das Wiederfinden messbar. Einzige Ansicht mit der Zeitachse.</td></tr>
+      <tr><td><b>D · Wissenslandkarte</b></td><td>Vorbehalte jetzt bequellt (Ebene B): Abstände und Clustergrößen nicht als Maß lesen. Nutzbar als Ähnlichkeits-Anregung, wissenschaftlich der vorsichtigste Kandidat.</td></tr>
+      <tr><td><b>E · Kuratier-Board</b></td><td>Gestützt durch 2D-Stabilität und manuelle Anordnung. Preis ist der Aufwand (laut Studienlage offene Kosten-Nutzen-Frage).</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout ok rise d4">
+    <span class="lab">Das Gesamtbild</span>
+    <p>Die Evidenz favorisiert <b>B (Fokus-Explorer)</b> für die tägliche Denkarbeit und <b>A (aufgeräumte Cluster-Karte)</b> für den Überblick, mit <b>C</b> als episodischem Zugang und <b>E</b> als Kurationswerkzeug. <b>D</b> bleibt der Wildcard. Die vollständige Herleitung mit allen Zitaten steht in <code>FORSCHUNG.md</code> im Projektordner.</p>
+  </div>
+
+  <div class="rfoot">
+    <div class="fnav">
+      <a href="laeufe.html">← Die Läufe im Detail</a>
+      <a href="/">Zu den Prototypen →</a>
+    </div>
+  </div>
+</div>
+
+<script src="assets/bericht.js"></script>
+<script>
+(async function () {
+  const run1 = await loadRun("data/run1.json");
+  const run2 = await loadRun("data/run2.json");
+  const items = buildClaims(run2).concat(buildClaims(run1));
+  const mount = document.getElementById("claims");
+  renderClaims(mount, items);
+  wireClaimFilter(document.getElementById("claimfilter"), mount);
+
+  // Theme D — extrahierte, unverifizierte Aussagen (Ebene B)
+  const themeD = [
+    { c: "t-SNE: Clustergrößen sind bedeutungslos und Abstände zwischen Clustern nicht interpretierbar. Perplexity verändert das Bild stark, mehrere Werte nötig; reines Rauschen kann bei niedriger Perplexity scheinbare Cluster erzeugen.",
+      q: "Wattenberg, Viégas & Johnson (2016), „How to Use t-SNE Effectively“ (Distill)", s: "https://distill.pub/2016/misread-tsne/" },
+    { c: "2D-Embeddings verzerren stark: Nachbarschafts-Treue oft mit Jaccard-Distanz über 70% zum Originalraum, Distanzverhältnisse 4- bis 200-fach aufgebläht. Eine als „von-Neumann-Elefant“ geformte Projektion hat ähnliche Datentreue wie ein echtes UMAP/t-SNE-Bild.",
+      q: "PLoS Computational Biology (2023), 10.1371/journal.pcbi.1011288", s: "https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1011288" },
+    { c: "UMAP ist nicht inhärent besser als t-SNE: globale Strukturerhaltung hängt vor allem an der Initialisierung (PCA vs. zufällig), nicht am Verfahren. Der oft berichtete UMAP-Vorteil geht auf die Default-Initialisierung zurück.",
+      q: "Kobak & Linderman (2021), Nature Biotechnology", s: "https://pubmed.ncbi.nlm.nih.gov/33526945/" },
+    { c: "Konsequenz für Prototyp D: Nähe als grobe Ähnlichkeit lesen, niemals Abstände oder Regionsgrößen als Maß interpretieren. Die Karte ist ein Anregungs-, kein Messinstrument.",
+      q: "Synthese der obigen Quellen (Ableitung)", s: "" },
+  ];
+  const dm = document.getElementById("themed");
+  themeD.forEach(d => {
+    const det = document.createElement("details");
+    det.className = "finding t-mid";
+    det.innerHTML = `<summary>
+      <span class="fmark" style="color:#ffd479">◐</span>
+      <span class="fclaim">${d.c.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}</span>
+      <span class="fmeta"><span class="pill mid">Ebene B</span></span>
+    </summary>
+    <div class="fbody"><div class="ev">Quelle: ${d.q}</div>${d.s ? `<div class="srcs"><a href="${d.s}" target="_blank" rel="noopener">${d.s}</a></div>` : ""}</div>`;
+    dm.appendChild(det);
+  });
+})();
+</script>
+<style>
+  table.verdict { width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.verdict th, table.verdict td { border:1px solid var(--border); padding:10px 12px; text-align:left; vertical-align:top; }
+  table.verdict th { color:var(--text-dim); font-weight:600; background:var(--bg-elev); }
+  table.verdict td:first-child { white-space:nowrap; }
+  table.verdict td.win { color:#c8f7e8; }
+</style>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projektbericht · memory-atlas</title>
+<link rel="stylesheet" href="/shared/theme.css">
+<link rel="stylesheet" href="assets/bericht.css">
+</head>
+<body>
+<div class="rbar">
+  <a class="brand" href="index.html"><span class="glyph">🧭</span><b>memory-atlas</b><span>Projektbericht</span></a>
+  <div class="spacer"></div>
+  <nav>
+    <a href="index.html" class="here">Überblick</a>
+    <a href="methodik.html">Wie Claude vorgeht</a>
+    <a href="laeufe.html">Die Läufe</a>
+    <a href="ergebnisse.html">Was herauskam</a>
+  </nav>
+  <a class="exit" href="/">← zu den Prototypen</a>
+</div>
+
+<div class="wrap">
+  <div class="hero rise">
+    <div class="kicker"><b>Ein Werkstattbericht</b> · wie aus einer unbefriedigenden 3D-Grafik ein fundiertes Werkzeug wurde</div>
+    <h1>Wie visualisiert man Wissen so, dass man es wiederfindet?</h1>
+    <p class="lead">Dieses Projekt hatte zwei Aufträge: <b>herausfinden</b>, welche Visualisierung für einen persönlichen Wissensgraphen kognitiv wirklich trägt, und <b>bauen</b>, was man dazu ausprobieren muss. Diese Seiten dokumentieren beides, das methodische Vorgehen der KI-Agenten ebenso wie die wissenschaftlichen Ergebnisse. Sie sind zum Lernen gemacht, nicht nur zum Nachschlagen.</p>
+  </div>
+
+  <div class="stats rise d1">
+    <div class="stat"><div class="v accent">3</div><div class="k">Recherche-Läufe</div><div class="sub">Scope → Search → Fetch → Verify → Synthesize</div></div>
+    <div class="stat"><div class="v">252</div><div class="k">Subagenten insgesamt</div><div class="sub">47 + 103 + 102, parallel orchestriert</div></div>
+    <div class="stat"><div class="v">~7,4 Mio</div><div class="k">Tokens verarbeitet</div><div class="sub">von den Agenten, nicht im Hauptchat</div></div>
+    <div class="stat"><div class="v ok">24</div><div class="k">von 25 Claims bestätigt</div><div class="sub">im großen Lauf, adversarial · 1 widerlegt</div></div>
+  </div>
+
+  <div class="eyebrow rise d1"><span class="n">3 Kapitel</span> Von der Methode über die Läufe zu den Ergebnissen</div>
+
+  <div class="cards three rise d1">
+    <a class="card" href="methodik.html">
+      <span class="tag">Methode</span>
+      <h3>Wie Claude vorgeht →</h3>
+      <p>Die deep-research-Pipeline als anklickbares Phasenmodell: Subagenten, parallele Suche und vor allem die adversariale Verifikation, bei der Claims nicht bestätigt, sondern angegriffen werden.</p>
+      <span class="arrow">Methode ansehen</span>
+    </a>
+    <a class="card" href="laeufe.html">
+      <span class="tag">Prozess</span>
+      <h3>Die Läufe im Detail →</h3>
+      <p>Beide großen Läufe mit echten Zahlen, Timeline und einem Agenten-Explorer: klapp jeden einzelnen Subagenten auf und sieh seinen Auftrag und sein Zwischenergebnis. Inklusive des Token-Ausfalls als Lehrstück.</p>
+      <span class="arrow">Prozess erkunden</span>
+    </a>
+    <a class="card" href="ergebnisse.html">
+      <span class="tag">Ergebnis</span>
+      <h3>Was herauskam →</h3>
+      <p>Die wissenschaftlichen Befunde, sauber getrennt nach verifiziert, unverifiziert und widerlegt, mit Originalzitaten und der Übersetzung in eine Empfehlung für die fünf Prototypen.</p>
+      <span class="arrow">Ergebnisse lesen</span>
+    </a>
+  </div>
+
+  <div class="callout warn rise d4">
+    <span class="lab">Ehrlich bleiben ist Teil der Methode</span>
+    <p>Zweimal gingen mitten in der Arbeit die Ressourcen aus: erst die Tokens des schnellen Modells (Fable), später das Session-Limit. Diese Vorfälle sind hier nicht versteckt, sondern dokumentiert, denn sie zeigen, wie ein Agent mit realen Grenzen umgeht: transparent umschalten, Lücken markieren, nichts als gesichert ausgeben, was es nicht ist. Ein Claim, den Claude selbst früher aufgestellt hatte (eine „unter 5 Knoten"-Grenze), wurde von der eigenen Verifikation <b>widerlegt</b> und verworfen.</p>
+  </div>
+
+  <div class="callout ok rise d4">
+    <span class="lab">Das Werkzeug selbst</span>
+    <p>Parallel zur Recherche entstanden fünf interaktive Visualisierungs-Prototypen (Cluster-Karte, Fokus-Explorer, Gedächtnisstrom, Wissenslandkarte, Kuratier-Board), gespeist aus zwei echten Datenquellen. Du erreichst sie jederzeit über <a href="/" style="color:var(--accent)">← zu den Prototypen</a> oben rechts.</p>
+  </div>
+
+  <div class="rfoot">
+    <div class="fnav">
+      <span></span>
+      <a href="methodik.html">Weiter: Wie Claude vorgeht →</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C — Gedächtnisstrom · memory-atlas</title>
+<link rel="stylesheet" href="/shared/theme.css">
+<style>
+  #svg { width: 100%; height: 100%; display: block; }
+  .axis text { fill: var(--text-faint); font-size: 11px; }
+  .axis path, .axis line { stroke: var(--border); }
+  .lane-label { fill: var(--text-dim); font-size: 12px; font-weight: 600; }
+  .lane-band:nth-child(even) { fill: rgba(255,255,255,0.015); }
+  .arc { fill: none; stroke: rgba(140,150,170,0.15); }
+  .arc.hl { stroke: var(--accent); stroke-opacity: .6; }
+  .bead { cursor: pointer; stroke: rgba(0,0,0,0.4); stroke-width: 1; }
+  .modeswitch { display: flex; gap: 6px; }
+  .hint { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 40; color: var(--text-faint); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="stage"><svg id="svg"></svg></div>
+<div class="hint">Bögen zeigen Verbindungen über die Zeit · Hover hebt zeitliche + verlinkte Nachbarn hervor · unten ziehen zum Zoomen</div>
+
+<script src="/shared/vendor/d3.min.js"></script>
+<script src="/shared/api.js"></script>
+<script>
+(async function () {
+  const A = window.Atlas;
+  const graph = await A.api.loadGraph();
+  A.applyTypeColors(graph.meta);
+  const bar = A.buildTopbar({ title: "C — Gedächtnisstrom", subtitle: "Wann ist mein Wissen entstanden?" });
+  const panel = A.buildPanel();
+  panel.querySelector(".close").addEventListener("click", () =>
+    document.querySelector(".stage").classList.remove("with-panel"));
+
+  // Zeitwert: created bevorzugt, sonst mtime
+  const parse = (n) => new Date(n.created || n.mtime || null);
+  const dated = graph.nodes.filter((n) => !n.ghost && (n.created || n.mtime) && !isNaN(parse(n)));
+  const byId = new Map(dated.map((n) => [n.id, n]));
+  const adj = A.buildAdjacency(graph);
+
+  let laneMode = graph.meta.tiers.length ? "tier" : "type";
+  const laneKey = (n) => laneMode === "tier" ? (n.tier || "—") : n.type;
+
+  const svg = d3.select("#svg");
+  const margin = { top: 30, right: 30, bottom: 90, left: 130 };
+  let W, H, x, y, lanes;
+  const root = svg.append("g");
+  const gBands = root.append("g");
+  const gArcs = root.append("g");
+  const gBeads = root.append("g");
+  const gAxis = root.append("g").attr("class", "axis");
+  const gLaneLabels = root.append("g");
+  const gBrush = svg.append("g").attr("class", "axis");
+
+  const times = dated.map(parse);
+  const fullExtent = d3.extent(times);
+  let xDomain = fullExtent;
+
+  function layout() {
+    W = window.innerWidth; H = window.innerHeight - 52;
+    root.attr("transform", `translate(${margin.left},${margin.top})`);
+    const iw = W - margin.left - margin.right;
+    const ih = H - margin.top - margin.bottom;
+    x = d3.scaleTime().domain(xDomain).range([0, iw]);
+    lanes = [...new Set(dated.map(laneKey))].sort();
+    y = d3.scalePoint().domain(lanes).range([0, ih]).padding(0.6);
+    draw(iw, ih);
+  }
+
+  function draw(iw, ih) {
+    // Lane-Bänder
+    const band = gBands.selectAll("rect").data(lanes);
+    band.enter().append("rect").attr("class", "lane-band")
+      .merge(band)
+      .attr("x", 0).attr("width", iw)
+      .attr("y", (d) => y(d) - ih / lanes.length / 2)
+      .attr("height", ih / lanes.length)
+      .attr("fill", (d, i) => i % 2 ? "rgba(255,255,255,0.02)" : "transparent");
+    band.exit().remove();
+
+    // Lane-Labels
+    const ll = gLaneLabels.selectAll("text").data(lanes);
+    ll.enter().append("text").attr("class", "lane-label")
+      .merge(ll)
+      .attr("x", -12).attr("y", (d) => y(d) + 4).attr("text-anchor", "end")
+      .text((d) => d);
+    ll.exit().remove();
+
+    // Achse
+    gAxis.attr("transform", `translate(0,${ih})`).call(d3.axisBottom(x).ticks(8));
+
+    // Beads
+    const beads = gBeads.selectAll("circle").data(dated, (d) => d.id);
+    const be = beads.enter().append("circle").attr("class", "bead")
+      .on("mouseenter", (ev, d) => highlight(d))
+      .on("mouseleave", () => highlight(null))
+      .on("click", (ev, d) => {
+        A.showNodeInPanel(panel, graph, d, { onNavigate: () => {} });
+        document.querySelector(".stage").classList.add("with-panel");
+      });
+    be.merge(beads)
+      .attr("cx", (d) => x(parse(d)))
+      .attr("cy", (d) => y(laneKey(d)))
+      .attr("r", (d) => Math.max(3, Math.min(11, 3 + Math.sqrt(d.degree) * 1.8)))
+      .attr("fill", (d) => A.typeColor(graph.meta, d.type));
+    beads.exit().remove();
+
+    drawArcs();
+
+    // Brush zum Zoomen
+    const bx = d3.scaleTime().domain(fullExtent).range([0, iw]);
+    const brush = d3.brushX().extent([[0, 0], [iw, 40]])
+      .on("end", (ev) => {
+        if (!ev.selection) { xDomain = fullExtent; layout(); return; }
+        xDomain = ev.selection.map(bx.invert);
+        layout();
+      });
+    gBrush.attr("transform", `translate(${margin.left},${H - 44})`);
+    gBrush.selectAll(".brushaxis").data([0]).enter().append("g").attr("class", "brushaxis");
+    gBrush.select(".brushaxis").attr("transform", "translate(0,40)").call(d3.axisBottom(bx).ticks(6));
+    gBrush.selectAll(".brushmini").data(dated).enter().append("circle").attr("class", "brushmini")
+      .attr("cy", 20).attr("r", 1.5).attr("fill", "var(--text-faint)");
+    gBrush.selectAll(".brushmini").attr("cx", (d) => bx(parse(d)));
+    if (!gBrush.select(".selection-layer").node())
+      gBrush.append("g").attr("class", "selection-layer").call(brush);
+  }
+
+  function drawArcs() {
+    // Kanten zwischen datierten Knoten als Bögen über dem Strom
+    const links = graph.edges
+      .filter((e) => byId.has(e.source) && byId.has(e.target))
+      .map((e) => ({ s: byId.get(e.source), t: byId.get(e.target), id: e.source + "|" + e.target }));
+    const arc = gArcs.selectAll("path").data(links, (d) => d.id);
+    arc.enter().append("path").attr("class", "arc")
+      .merge(arc)
+      .attr("d", (d) => {
+        const x1 = x(parse(d.s)), y1 = y(laneKey(d.s));
+        const x2 = x(parse(d.t)), y2 = y(laneKey(d.t));
+        const mx = (x1 + x2) / 2, lift = Math.min(120, Math.abs(x2 - x1) * 0.4 + 20);
+        return `M${x1},${y1} Q${mx},${Math.min(y1, y2) - lift} ${x2},${y2}`;
+      });
+    arc.exit().remove();
+  }
+
+  function highlight(d) {
+    if (!d) {
+      gBeads.selectAll("circle").attr("opacity", 1);
+      gArcs.selectAll("path").attr("class", "arc");
+      return;
+    }
+    const nb = adj.get(d.id) || new Set();
+    gBeads.selectAll("circle").attr("opacity", (o) => o.id === d.id || nb.has(o.id) ? 1 : 0.15);
+    gArcs.selectAll("path").attr("class", (o) =>
+      o.s.id === d.id || o.t.id === d.id ? "arc hl" : "arc");
+  }
+
+  // Modus-Umschalter (Lane nach Tier/Typ)
+  const ctrls = bar.querySelector(".controls");
+  const sw = document.createElement("select"); sw.className = "control";
+  const opts = [["type", "Spuren: Typ"]];
+  if (graph.meta.tiers.length) opts.unshift(["tier", "Spuren: Tier"]);
+  for (const [v, l] of opts) { const o = document.createElement("option"); o.value = v; o.textContent = l; sw.appendChild(o); }
+  sw.value = laneMode;
+  sw.addEventListener("change", () => { laneMode = sw.value; layout(); });
+  ctrls.appendChild(sw);
+
+  window.addEventListener("resize", layout);
+  A.initSearch(bar, graph, (n) => { if (byId.has(n.id)) highlight(byId.get(n.id)); });
+  A.buildHud(`${dated.length} datierte Knoten · ${dated.length < graph.meta.counts.nodes ? (graph.meta.counts.nodes - graph.meta.counts.ghosts - dated.length) + " ohne Datum ausgeblendet · " : ""}Zeit = Änderungsdatum`);
+  layout();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A — Cluster-Karte · memory-atlas</title>
+<link rel="stylesheet" href="/shared/theme.css">
+<style>
+  #sigma { width: 100%; height: 100%; }
+  #clusterLabels { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+  .clabel {
+    position: absolute; transform: translate(-50%, -50%);
+    color: var(--text); font-weight: 700; font-size: 13px;
+    text-shadow: 0 0 8px var(--bg), 0 0 8px var(--bg), 0 1px 2px #000;
+    white-space: nowrap; opacity: .85; letter-spacing: .02em;
+  }
+  #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-dim); z-index: 100; }
+</style>
+</head>
+<body>
+<div id="loading">Berechne stabiles Layout…</div>
+<div class="stage"><div id="sigma"></div><div id="clusterLabels"></div></div>
+
+<script src="/shared/vendor/graphology.umd.min.js"></script>
+<script src="/shared/vendor/graphology-library.min.js"></script>
+<script src="/shared/vendor/sigma.min.js"></script>
+<script src="/shared/api.js"></script>
+<script>
+(async function () {
+  const A = window.Atlas;
+  const graph = await A.api.loadGraph();
+  A.applyTypeColors(graph.meta);
+
+  const bar = A.buildTopbar({ title: "A — Cluster-Karte", subtitle: "Wie hängt alles zusammen?" });
+  const panel = A.buildPanel();
+  const hidden = new Set();
+
+  // ---- graphology-Modell aufbauen ----
+  const Graph = graphology.Graph;
+  const g = new Graph({ multi: false, type: "undirected" });
+  const byId = new Map(graph.nodes.map((n) => [n.id, n]));
+
+  // Deterministischer Startkreis (stabil ohne Math.random) — je Cluster ein Segment
+  const N = graph.nodes.length;
+  graph.nodes.forEach((n, i) => {
+    const ang = (i / N) * Math.PI * 2;
+    const r = 100 + (n.cluster % 7) * 60;
+    if (!g.hasNode(n.id)) g.addNode(n.id, {
+      x: Math.cos(ang) * r + n.cluster * 13,
+      y: Math.sin(ang) * r + (n.degree % 5) * 7,
+      size: Math.max(3, Math.min(18, 3 + Math.sqrt(n.degree) * 2.4)),
+      color: A.typeColor(graph.meta, n.type),
+      label: n.label,
+      _node: n,
+    });
+  });
+  for (const e of graph.edges) {
+    if (g.hasNode(e.source) && g.hasNode(e.target) && !g.hasEdge(e.source, e.target)) {
+      g.addEdge(e.source, e.target, { size: 0.4, color: "rgba(140,150,170,0.18)" });
+    }
+  }
+
+  // ---- ForceAtlas2 berechnen, dann EINFRIEREN (Stabilitäts-Befund) ----
+  const fa2 = graphologyLibrary.layoutForceAtlas2;
+  const settings = fa2.inferSettings(g);
+  fa2.assign(g, { iterations: 400, settings: { ...settings, gravity: 1.2, scalingRatio: 12, barnesHutOptimize: N > 200, adjustSizes: true } });
+
+  document.getElementById("loading").remove();
+
+  // ---- Sigma ----
+  const renderer = new Sigma(g, document.getElementById("sigma"), {
+    defaultEdgeColor: "rgba(140,150,170,0.18)",
+    labelColor: { color: "#c8cede" },
+    labelSize: 11,
+    labelFont: "-apple-system, sans-serif",
+    labelRenderedSizeThreshold: 8,
+    labelDensity: 0.35,
+    zIndex: true,
+  });
+
+  // Hover: Nachbarn hervorheben
+  const adj = A.buildAdjacency(graph);
+  let hoveredNode = null;
+  function refresh() {
+    renderer.setSetting("nodeReducer", (id, data) => {
+      const n = byId.get(id);
+      if (n && hidden.has(n.type)) return { ...data, hidden: true };
+      if (hoveredNode) {
+        if (id === hoveredNode) return { ...data, zIndex: 2, size: data.size * 1.3 };
+        if (adj.get(hoveredNode)?.has(id)) return { ...data, zIndex: 1 };
+        return { ...data, color: "rgba(90,100,120,0.25)", label: "" };
+      }
+      return data;
+    });
+    renderer.setSetting("edgeReducer", (id, data) => {
+      const [s, t] = g.extremities(id);
+      if (hoveredNode) {
+        if (s === hoveredNode || t === hoveredNode)
+          return { ...data, color: "rgba(45,212,191,0.55)", size: 1.2, zIndex: 1 };
+        return { ...data, hidden: true };
+      }
+      return data;
+    });
+  }
+  renderer.on("enterNode", ({ node }) => { hoveredNode = node; refresh(); });
+  renderer.on("leaveNode", () => { hoveredNode = null; refresh(); });
+  renderer.on("clickNode", ({ node }) => {
+    A.showNodeInPanel(panel, graph, byId.get(node), {
+      onNavigate: (t) => focusNode(t.id),
+    });
+    document.querySelector(".stage").classList.add("with-panel");
+  });
+  panel.querySelector(".close").addEventListener("click", () =>
+    document.querySelector(".stage").classList.remove("with-panel"));
+  refresh();
+
+  function focusNode(id) {
+    const disp = renderer.getNodeDisplayData(id);
+    if (!disp) return;
+    renderer.getCamera().animate({ x: disp.x, y: disp.y, ratio: 0.4 }, { duration: 500 });
+    A.showNodeInPanel(panel, graph, byId.get(id), { onNavigate: (t) => focusNode(t.id) });
+    document.querySelector(".stage").classList.add("with-panel");
+  }
+
+  // ---- Cluster-Labels als Overlay an Schwerpunkten (benannte Orte) ----
+  const clusterCentroids = {};
+  for (const [cid, info] of Object.entries(graph.meta.clusters)) {
+    if (info.size < 4) continue; // nur größere Cluster benennen
+    let sx = 0, sy = 0, cnt = 0;
+    graph.nodes.forEach((n) => {
+      if (String(n.cluster) === cid && g.hasNode(n.id)) {
+        const a = g.getNodeAttributes(n.id); sx += a.x; sy += a.y; cnt++;
+      }
+    });
+    if (cnt) clusterCentroids[cid] = { x: sx / cnt, y: sy / cnt, label: info.label };
+  }
+  const labelLayer = document.getElementById("clusterLabels");
+  const labelEls = {};
+  for (const [cid, c] of Object.entries(clusterCentroids)) {
+    const el = document.createElement("div");
+    el.className = "clabel";
+    el.textContent = c.label;
+    labelLayer.appendChild(el);
+    labelEls[cid] = el;
+  }
+  function positionLabels() {
+    for (const [cid, c] of Object.entries(clusterCentroids)) {
+      const p = renderer.graphToViewport({ x: c.x, y: c.y });
+      const el = labelEls[cid];
+      el.style.left = p.x + "px";
+      el.style.top = p.y + "px";
+      el.style.display = hoveredNode ? "none" : "block";
+    }
+  }
+  renderer.on("afterRender", positionLabels);
+  positionLabels();
+
+  // ---- Suche, Legende, HUD ----
+  A.initSearch(bar, graph, (n) => focusNode(n.id));
+  A.buildLegend(graph, {
+    onToggle: (type, active) => { if (active) hidden.delete(type); else hidden.add(type); refresh(); },
+  });
+  A.buildHud(`${graph.meta.counts.nodes} Knoten · ${graph.meta.counts.edges} Kanten · ${Object.keys(clusterCentroids).length} benannte Cluster · Layout eingefroren`);
+})();
+</script>
+</body>
+</html>

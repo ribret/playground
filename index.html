@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>memory-atlas — Prototypen</title>
+<link rel="stylesheet" href="/shared/theme.css">
+<style>
+  html, body { overflow: auto; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 48px 24px 80px; }
+  header.intro h1 { font-size: 26px; margin: 0 0 6px; }
+  header.intro p { color: var(--text-dim); max-width: 640px; margin: 0 0 10px; }
+  .source-switch { display: flex; gap: 8px; margin: 18px 0 34px; align-items: center; }
+  .source-switch .label { color: var(--text-faint); font-size: 12.5px; margin-right: 4px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+  .card {
+    display: block; text-decoration: none; color: var(--text);
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; transition: all .18s ease;
+    position: relative; overflow: hidden;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .card .glyph { font-size: 26px; margin-bottom: 10px; display: block; }
+  .card h2 { font-size: 16px; margin: 0 0 4px; }
+  .card .frage { color: var(--accent); font-size: 12.5px; font-style: italic; margin-bottom: 8px; }
+  .card p { color: var(--text-dim); font-size: 13px; margin: 0 0 12px; }
+  .card .dims { display: flex; flex-wrap: wrap; gap: 5px; }
+  .card .dim { font-size: 10.5px; padding: 2px 8px; border-radius: 999px; background: var(--bg-elev2); color: var(--text-faint); border: 1px solid var(--border); }
+  .card .dim.strong { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+  .health { margin-top: 40px; color: var(--text-faint); font-size: 12px; font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="intro">
+    <h1>memory-atlas</h1>
+    <p>Fünf Wege, dein Wissen zu sehen. Jeder Prototyp beantwortet eine andere Grundfrage —
+       probiere alle mit denselben Live-Daten und entscheide, welches Ordnungsprinzip deinem Denken entspricht.</p>
+  </header>
+
+  <div class="source-switch">
+    <span class="label">Datenquelle:</span>
+    <span class="chip" data-source="memory">Claude-Memories</span>
+    <span class="chip" data-source="memex">Second Brain / Memex</span>
+  </div>
+
+  <div class="cards">
+    <a class="card" data-href="/proto/a-cluster/">
+      <span class="glyph">🕸️</span>
+      <h2>A — Cluster-Karte</h2>
+      <div class="frage">„Wie hängt alles zusammen?"</div>
+      <p>2D-Übersichtskarte mit automatischer Themenerkennung. Communities werden zu benannten Orten mit Hüllen — der ganze Graph auf einen Blick, ohne Hairball.</p>
+      <div class="dims"><span class="dim strong">Cluster</span><span class="dim strong">Grad</span><span class="dim strong">Typ</span><span class="dim">Tier</span></div>
+    </a>
+    <a class="card" data-href="/proto/b-radial/">
+      <span class="glyph">🎯</span>
+      <h2>B — Fokus-Explorer</h2>
+      <div class="frage">„Was gehört zu diesem Gedanken?"</div>
+      <p>Ein Gedanke im Zentrum, seine Nachbarschaft in Ringen darum. Von Assoziation zu Assoziation gehen — mit Gedankenpfad als Brotkrume.</p>
+      <div class="dims"><span class="dim strong">Nachbarschaft</span><span class="dim strong">Typ</span><span class="dim">Grad</span></div>
+    </a>
+    <a class="card" data-href="/proto/c-strom/">
+      <span class="glyph">🌊</span>
+      <h2>C — Gedächtnisstrom</h2>
+      <div class="frage">„Wann ist mein Wissen entstanden?"</div>
+      <p>Alle Erinnerungen entlang der Zeit, Verbindungen als Bögen darüber. Themenkonjunkturen, Wissensschübe und lang zurückreichende Verbindungen werden sichtbar.</p>
+      <div class="dims"><span class="dim strong">Zeit</span><span class="dim strong">Typ</span><span class="dim">Tier</span></div>
+    </a>
+    <a class="card" data-href="/proto/d-landkarte/">
+      <span class="glyph">🗺️</span>
+      <h2>D — Wissenslandkarte</h2>
+      <div class="frage">„Was ist sich ähnlich — auch ohne Link?"</div>
+      <p>Semantische Landschaft: Nähe = inhaltliche Ähnlichkeit, Höhenlinien = Themendichte. Deckt Verbindungen auf, die noch niemand gezogen hat.</p>
+      <div class="dims"><span class="dim strong">Semantik</span><span class="dim strong">Cluster</span><span class="dim">Typ</span><span class="dim">Zeit</span></div>
+    </a>
+    <a class="card" data-href="/proto/e-board/">
+      <span class="glyph">🗂️</span>
+      <h2>E — Kuratier-Board</h2>
+      <div class="frage">„Wo lege ICH das hin?"</div>
+      <p>Dein Schreibtisch: Knoten selbst anordnen (Positionen bleiben gespeichert), Kanten ziehen, Tiers als Zonen. Kuratieren als Primärinteraktion.</p>
+      <div class="dims"><span class="dim strong">Tier</span><span class="dim strong">Hand-Layout</span><span class="dim">Typ</span></div>
+    </a>
+  </div>
+
+  <div class="health" id="health">Lade Quellen-Status…</div>
+</div>
+<script>
+  const params = new URLSearchParams(location.search);
+  let source = params.get("source") === "memex" ? "memex" : "memory";
+
+  function renderSwitch() {
+    document.querySelectorAll(".source-switch .chip").forEach((c) => {
+      c.classList.toggle("active", c.dataset.source === source);
+    });
+    document.querySelectorAll(".card").forEach((a) => {
+      a.href = a.dataset.href + "?source=" + source;
+    });
+    history.replaceState(null, "", "/?source=" + source);
+  }
+  document.querySelectorAll(".source-switch .chip").forEach((c) => {
+    c.addEventListener("click", () => { source = c.dataset.source; renderSwitch(); });
+  });
+  renderSwitch();
+
+  fetch("/api/health").then((r) => r.json()).then((h) => {
+    const parts = [];
+    for (const [key, info] of Object.entries(h.sources)) {
+      if (info.ok) {
+        const c = info.counts;
+        parts.push(`${key}: ${c.nodes} Knoten · ${c.edges} Kanten · ${c.ghosts} Geister · ${c.orphans} verwaist`);
+      } else parts.push(`${key}: FEHLER ${info.error}`);
+    }
+    document.getElementById("health").textContent = parts.join("   |   ");
+  }).catch(() => {
+    document.getElementById("health").textContent = "Server-Status nicht erreichbar";
+  });
+</script>
+</body>
+</html>

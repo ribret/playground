@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Die Läufe im Detail · memory-atlas</title>
+<link rel="stylesheet" href="/shared/theme.css">
+<link rel="stylesheet" href="assets/bericht.css">
+</head>
+<body>
+<div class="rbar">
+  <a class="brand" href="index.html"><span class="glyph">🧭</span><b>memory-atlas</b><span>Projektbericht</span></a>
+  <div class="spacer"></div>
+  <nav>
+    <a href="index.html">Überblick</a>
+    <a href="methodik.html">Wie Claude vorgeht</a>
+    <a href="laeufe.html" class="here">Die Läufe</a>
+    <a href="ergebnisse.html">Was herauskam</a>
+  </nav>
+  <a class="exit" href="/">← zu den Prototypen</a>
+</div>
+
+<div class="wrap wide">
+  <div class="hero rise">
+    <div class="kicker"><b>Kapitel 2</b> · der Prozess</div>
+    <h1>Die Läufe im Detail</h1>
+    <p class="lead">Hier siehst du, was wirklich passiert ist: die Phasen mit echten Zahlen, das komplette Voting-Protokoll und einen Explorer, in dem du <b>jeden einzelnen Subagenten aufklappen</b> kannst, um seinen Auftrag und sein Zwischenergebnis zu lesen. Wähle einen Lauf.</p>
+  </div>
+
+  <div class="filterbar rise d1" id="runswitch">
+    <span class="fl-label">Lauf</span>
+    <button class="fchip on" data-run="run2">Lauf 2 · Netzwerk, Working Memory, Zeit</button>
+    <button class="fchip" data-run="run1">Lauf 1 · Räumliches Gedächtnis</button>
+  </div>
+
+  <div id="runhead" class="rise d1"></div>
+
+  <div class="eyebrow rise d1"><span class="n">Phasen</span> Wie sich die Arbeit über die fünf Phasen verteilte</div>
+  <div class="timeline rise d1" id="timeline"></div>
+
+  <div class="callout warn rise d1" id="incident"></div>
+
+  <div class="eyebrow rise d1"><span class="n">Voting-Protokoll</span> Jeder geprüfte Claim mit seinem Abstimmungsergebnis</div>
+  <div class="tbl-scroll rise d1"><div id="votelog"></div></div>
+
+  <div class="eyebrow rise d1"><span class="n">Agenten-Explorer</span> Klapp einen Agenten auf, um Auftrag und Zwischenergebnis zu sehen</div>
+  <div class="rise d1" id="agents"></div>
+
+  <div class="callout warn rise d4">
+    <span class="lab">Lauf 3, die Nachrecherche zu den Wissenslandkarten (t-SNE/UMAP)</span>
+    <p>Ein dritter, gezielter Lauf sollte die letzte offene Lücke schließen. <b>102 Agenten</b> starteten, Suche und Lesen liefen sauber durch und extrahierten 25 Behauptungen mit Primärquellen und Originalzitaten. Dann traf das <b>Session-Limit</b>: alle 25 Prüf-Panels scheiterten mit „session limit". Das ist ein Infrastruktur-Ausfall, kein Forschungsergebnis, und wird auch so behandelt. Die extrahierten Aussagen sind gut bequellt (Distill 2016, PLoS Comput. Biol. 2023, Kobak &amp; Linderman), gelten aber bis zur nachgeholten Prüfung als <b>unverifiziert (Ebene B)</b>. Details im Kapitel <a href="ergebnisse.html" style="color:var(--accent)">Was herauskam</a>.</p>
+  </div>
+
+  <div class="rfoot">
+    <div class="fnav">
+      <a href="methodik.html">← Wie Claude vorgeht</a>
+      <a href="ergebnisse.html">Weiter: Was herauskam →</a>
+    </div>
+  </div>
+</div>
+
+<script src="assets/bericht.js"></script>
+<script>
+(async function () {
+  const runs = {};
+  runs.run1 = await loadRun("data/run1.json");
+  runs.run2 = await loadRun("data/run2.json");
+
+  const meta = {
+    run1: { title: "Lauf 1 · Räumliches Gedächtnis, 2D vs. 3D u.a.",
+      incident: "<span class=\"lab\">Der Token-Vorfall</span><p>Mitten in der <b>Fetch-Phase</b> gingen die Tokens des schnellen Modells (Fable) aus. Viele Lese-Agenten scheiterten mit „out of usage credits“. Claude schaltete transparent auf das stärkere Modell (Opus) um, sodass Verifikation und Synthese durchliefen. Ergebnis dieser Ehrlichkeit: nur 3 der 7 Themenfelder wurden belegt, die Lücken wurden offen markiert statt kaschiert, und in Lauf 2 gezielt nachgeholt.</p>" },
+    run2: { title: "Lauf 2 · Netzwerk-Kognition, Working Memory, Zeitachsen",
+      incident: "<span class=\"lab\">Der gründliche Lauf</span><p>Komplett auf dem starken Modell (Opus), mit <b>drei</b> unabhängigen Prüfern pro Claim statt einem. 103 Agenten, kein einziger Fehler. Von 25 geprüften Behauptungen überlebten 24, eine fiel mit 0 zu 3 durch: die von Claude selbst früher behauptete „unter 5 neue Knoten“-Grenze. Selbstkorrektur im Protokoll sichtbar.</p>" },
+  };
+
+  const runhead = document.getElementById("runhead");
+  const timeline = document.getElementById("timeline");
+  const incident = document.getElementById("incident");
+  const votelog = document.getElementById("votelog");
+  const agents = document.getElementById("agents");
+
+  function fmt(n){ return new Intl.NumberFormat("de-DE").format(Math.round(n||0)); }
+  function ktok(n){ return n>=1e6 ? (n/1e6).toFixed(2)+" Mio" : n>=1e3 ? Math.round(n/1e3)+"k" : String(n||0); }
+
+  function paint(key) {
+    const data = runs[key];
+    const s = data.stats || {};
+    const m = data.meta || {};
+    const durMin = data.wall ? Math.round(data.wall / 60000) : null;
+    runhead.innerHTML = `<div class="stats" style="margin-top:14px">
+      <div class="stat"><div class="v accent">${fmt(m.agentCount || data.agents.length)}</div><div class="k">Subagenten</div><div class="sub">${meta[key].title}</div></div>
+      <div class="stat"><div class="v">${ktok(m.totalTokens||0)}</div><div class="k">Tokens</div><div class="sub">${durMin?"Dauer "+durMin+" min":""} · ${m.totalToolCalls||0} Tool-Calls</div></div>
+      <div class="stat"><div class="v">${s.claimsVerified!=null?s.claimsVerified:data.voteLog.length}</div><div class="k">Claims geprüft</div><div class="sub">aus ${s.claimsExtracted||"?"} extrahierten</div></div>
+      <div class="stat"><div class="v ${key==="run2"?"ok":""}">${s.confirmed!=null?s.confirmed:data.findings.length}</div><div class="k">Claims bestätigt</div><div class="sub">${s.killed||data.refuted.length} widerlegt · ${s.afterSynthesis||data.findings.length} Findings</div></div>
+    </div>`;
+
+    timeline.innerHTML = "";
+    (data.phaseAgg||[]).forEach((p,i) => {
+      const err = p.error ? ` · <span style="color:var(--warn)">${p.error} Fehler</span>` : "";
+      const it = document.createElement("div");
+      it.className = "tl-item" + (p.error ? " err" : "");
+      it.innerHTML = `<div class="tl-t">Phase ${p.phaseIndex}</div>
+        <div class="tl-h">${p.phase}</div>
+        <p>${p.agents} Agent${p.agents>1?"en":""} · ${ktok(p.tokens)} Tokens · ${p.toolCalls} Tool-Calls${err}</p>`;
+      timeline.appendChild(it);
+    });
+
+    incident.innerHTML = meta[key].incident;
+    renderVoteLog(votelog, data);
+    renderAgents(agents, data);
+  }
+
+  document.getElementById("runswitch").addEventListener("click", (e) => {
+    const chip = e.target.closest(".fchip");
+    if (!chip) return;
+    document.querySelectorAll("#runswitch .fchip").forEach(c => c.classList.remove("on"));
+    chip.classList.add("on");
+    paint(chip.dataset.run);
+  });
+
+  paint("run2");
+})();
+</script>
+</body>
+</html>

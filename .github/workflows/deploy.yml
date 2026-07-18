@@ -1,0 +1,37 @@
+name: Deploy to kasserver (FTP)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Nur simulieren (nichts hochladen)"
+        type: boolean
+        default: false
+
+jobs:
+  ftp-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: w0063cd7.kasserver.com
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./
+          server-dir: ./
+          # Erster Lauf als dry-run: zeigt Server-Inhalt + geplante Uploads,
+          # schreibt nichts. Nach Prüfung auf false setzen.
+          dry-run: ${{ github.event_name == 'push' }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/README.md
+            **/.DS_Store

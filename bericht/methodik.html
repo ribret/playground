@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wie Claude vorgeht · memory-atlas</title>
+<link rel="stylesheet" href="/shared/theme.css">
+<link rel="stylesheet" href="assets/bericht.css">
+</head>
+<body>
+<div class="rbar">
+  <a class="brand" href="index.html"><span class="glyph">🧭</span><b>memory-atlas</b><span>Projektbericht</span></a>
+  <div class="spacer"></div>
+  <nav>
+    <a href="index.html">Überblick</a>
+    <a href="methodik.html" class="here">Wie Claude vorgeht</a>
+    <a href="laeufe.html">Die Läufe</a>
+    <a href="ergebnisse.html">Was herauskam</a>
+  </nav>
+  <a class="exit" href="/">← zu den Prototypen</a>
+</div>
+
+<div class="wrap">
+  <div class="hero rise">
+    <div class="kicker"><b>Kapitel 1</b> · die Methode</div>
+    <h1>Wie Claude bei so einem Projekt vorgeht</h1>
+    <p class="lead">Ein einzelnes Sprachmodell, das eine große Frage in einem Rutsch beantwortet, würde raten und sich selbst glauben. Der Trick ist ein anderer: die Arbeit auf viele kleine, spezialisierte <b>Subagenten</b> verteilen und die Ergebnisse anschließend gegeneinander prüfen. Genau das macht der deep-research-Ablauf.</p>
+  </div>
+
+  <div class="cards two rise d1">
+    <div class="card" style="cursor:default">
+      <span class="tag">Vorphase</span>
+      <h3>Erkunden &amp; Planen</h3>
+      <p>Bevor recherchiert wird, lesen <b>Explore-Subagenten</b> (nur Lesezugriff) den Ist-Zustand: die alte 3D-Grafik, den bestehenden Code, die Struktur des Obsidian-Wissensspeichers. Danach entwerfen <b>Plan-Subagenten</b> Varianten (fünf Visualisierungs-Paradigmen, eine Server-Architektur). Erst dann fällt eine Entscheidung, abgestimmt mit dir per Auswahl-Menü.</p>
+    </div>
+    <div class="card" style="cursor:default">
+      <span class="tag">Warum Subagenten</span>
+      <h3>Teilen und prüfen</h3>
+      <p>Jeder Subagent hat ein enges Mandat und einen frischen, unbelasteten Kontext. Das hat zwei Vorteile: sie laufen <b>parallel</b> (fünf Suchen gleichzeitig statt nacheinander), und ein Agent, dessen einzige Aufgabe es ist, eine Behauptung anzugreifen, ist ehrlicher als einer, der seine eigene Antwort verteidigt.</p>
+    </div>
+  </div>
+
+  <div class="eyebrow rise d1"><span class="n">Der Kern</span> Die deep-research-Pipeline, Phase für Phase</div>
+  <p class="lead rise d1" style="margin-top:0">Klick auf eine Phase, um zu sehen, was dort passiert, mit einer Analogie und einem echten Zwischenergebnis aus dem großen Lauf.</p>
+
+  <div class="pipeline rise d1" id="pipeline"></div>
+
+  <div class="callout ok rise d4">
+    <span class="lab">Warum das „adversariale" Prüfen der entscheidende Schritt ist</span>
+    <p>In der Verify-Phase wird jeder Claim nicht bestätigt, sondern <b>angegriffen</b>: mehrere skeptische Agenten versuchen unabhängig, ihn zu widerlegen. Nur was genug dieser Angriffe übersteht, kommt in den Report. Das ist der Unterschied zwischen „klingt plausibel" und „hat den Gegenbeweis-Versuch überlebt". Im großen Lauf stimmten je drei Prüfer ab; eine Behauptung, die Claude selbst früher aufgestellt hatte, fiel dabei mit 0 zu 3 durch und wurde gestrichen.</p>
+  </div>
+
+  <div class="rfoot">
+    <div class="fnav">
+      <a href="index.html">← Überblick</a>
+      <a href="laeufe.html">Weiter: Die Läufe im Detail →</a>
+    </div>
+  </div>
+</div>
+
+<script src="assets/bericht.js"></script>
+<script>renderPipeline(document.getElementById("pipeline"));</script>
+</body>
+</html>

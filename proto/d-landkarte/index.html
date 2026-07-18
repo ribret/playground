@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D — Wissenslandkarte · memory-atlas</title>
+<link rel="stylesheet" href="/shared/theme.css">
+<style>
+  #canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+  #canvas:active { cursor: grabbing; }
+  .region-label {
+    position: absolute; transform: translate(-50%, -50%); pointer-events: none;
+    color: var(--text); font-size: 12px; font-weight: 600; opacity: .75;
+    text-shadow: 0 0 8px var(--bg), 0 0 6px var(--bg); white-space: nowrap; z-index: 6;
+  }
+  #regions { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+  .disclaimer {
+    position: fixed; top: 62px; right: 16px; z-index: 40; max-width: 260px;
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; font-size: 11px; color: var(--text-dim);
+  }
+  #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-dim); z-index: 100; text-align: center; }
+</style>
+</head>
+<body>
+<div id="loading">Lade Projektion…</div>
+<div class="stage"><canvas id="canvas"></canvas><div id="regions"></div></div>
+<div class="disclaimer" id="disc"></div>
+
+<script src="/shared/vendor/d3.min.js"></script>
+<script src="/shared/api.js"></script>
+<script>
+(async function () {
+  const A = window.Atlas;
+  const graph = await A.api.loadGraph();
+  A.applyTypeColors(graph.meta);
+  const bar = A.buildTopbar({ title: "D — Wissenslandkarte", subtitle: "Was ist sich ähnlich — auch ohne Link?" });
+  const panel = A.buildPanel();
+  panel.querySelector(".close").addEventListener("click", () =>
+    document.querySelector(".stage").classList.remove("with-panel"));
+
+  let proj;
+  try { proj = await A.api.loadLandkarte(); }
+  catch (e) {
+    document.getElementById("loading").innerHTML =
+      "Keine Projektion berechnet.<br><br>Im Terminal:<br><code>python3 embed.py --source " + A.source + "</code>";
+    return;
+  }
+  document.getElementById("loading").remove();
+  document.getElementById("disc").innerHTML =
+    "<strong>Lesehinweis:</strong> Nähe ≈ inhaltliche Ähnlichkeit. Cluster-<em>größen</em> und Abstände <em>zwischen</em> Regionen sind bei t-SNE nicht maßstäblich (Wattenberg 2016).";
+
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  let W, H, dpr;
+  const nodes = graph.nodes.filter((n) => proj.positions[n.id]);
+  nodes.forEach((n) => { const p = proj.positions[n.id]; n._px = p[0]; n._py = p[1]; });
+  const adj = A.buildAdjacency(graph);
+
+  let transform = d3.zoomIdentity;
+  let hovered = null;
+  let showLinks = false;
+  let ageTint = false;
+  const hidden = new Set();
+
+  // Zeit für Alters-Tönung
+  const times = nodes.map((n) => new Date(n.mtime || n.created)).filter((d) => !isNaN(d));
+  const tExtent = d3.extent(times);
+
+  function resize() {
+    dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth; H = window.innerHeight - 52;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + "px"; canvas.style.height = H + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    render();
+  }
+
+  // Weltkoordinaten [0,1] → Bildschirm (mit Rand)
+  const pad = 60;
+  function wx(px) { return pad + px * (W - 2 * pad); }
+  function wy(py) { return pad + py * (H - 2 * pad); }
+
+  // Dichte-Kontur (Themenhügel)
+  let contours = null;
+  function computeContours() {
+    const pts = nodes.filter((n) => !hidden.has(n.type)).map((n) => [wx(n._px), wy(n._py)]);
+    const dens = d3.contourDensity()
+      .x((d) => d[0]).y((d) => d[1])
+      .size([W, H]).bandwidth(28).thresholds(9)(pts);
+    contours = dens;
+  }
+
+  function render() {
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.translate(transform.x, transform.y);
+    ctx.scale(transform.k, transform.k);
+
+    // Kontur-Hügel
+    if (contours) {
+      contours.forEach((c, i) => {
+        ctx.beginPath();
+        const path = d3.geoPath(null, ctx);
+        path(c);
+        ctx.fillStyle = `rgba(45,212,191,${0.02 + i * 0.012})`;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(80,120,120,${0.05 + i * 0.02})`;
+        ctx.lineWidth = 0.5 / transform.k;
+        ctx.stroke();
+      });
+    }
+
+    // Links optional
+    if (showLinks) {
+      ctx.lineWidth = 0.4 / transform.k;
+      for (const e of graph.edges) {
+        const s = nodes.find((n) => n.id === e.source), t = nodes.find((n) => n.id === e.target);
+        if (!s || !t) continue;
+        ctx.strokeStyle = "rgba(140,150,170,0.12)";
+        ctx.beginPath(); ctx.moveTo(wx(s._px), wy(s._py)); ctx.lineTo(wx(t._px), wy(t._py)); ctx.stroke();
+      }
+    }
+
+    // Punkte
+    for (const n of nodes) {
+      if (hidden.has(n.type)) continue;
+      const px = wx(n._px), py = wy(n._py);
+      const r = Math.max(2.5, Math.min(9, 2.5 + Math.sqrt(n.degree) * 1.6)) / Math.sqrt(transform.k);
+      let color = A.typeColor(graph.meta, n.type);
+      if (ageTint && !isNaN(new Date(n.mtime))) {
+        const age = (tExtent[1] - new Date(n.mtime)) / (tExtent[1] - tExtent[0] || 1);
+        ctx.globalAlpha = 1 - age * 0.6; // ältere verblassen
+      } else ctx.globalAlpha = 1;
+      const isHl = hovered && (n.id === hovered.id || adj.get(hovered.id)?.has(n.id));
+      ctx.beginPath();
+      ctx.arc(px, py, isHl ? r * 1.6 : r, 0, Math.PI * 2);
+      ctx.fillStyle = hovered && !isHl ? "rgba(90,100,120,0.3)" : color;
+      ctx.fill();
+      if (isHl) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.2 / transform.k; ctx.stroke(); }
+    }
+    ctx.globalAlpha = 1;
+
+    // Knoten-Labels bei starkem Zoom (semantic zoom)
+    if (transform.k > 2.2) {
+      ctx.fillStyle = "#c8cede";
+      ctx.font = `${11 / transform.k}px -apple-system, sans-serif`;
+      ctx.textAlign = "center";
+      for (const n of nodes) {
+        if (hidden.has(n.type)) continue;
+        if (n.degree < 1 && transform.k < 3) continue;
+        ctx.fillText(n.label.slice(0, 24), wx(n._px), wy(n._py) - 8 / transform.k);
+      }
+    }
+    ctx.restore();
+    positionRegionLabels();
+  }
+
+  // Regionen-Labels (Screen-Space)
+  const regionLayer = document.getElementById("regions");
+  proj.regions.forEach((reg) => {
+    const el = document.createElement("div");
+    el.className = "region-label";
+    el.textContent = reg.label;
+    el.dataset.cx = reg.cx; el.dataset.cy = reg.cy;
+    regionLayer.appendChild(el);
+  });
+  function positionRegionLabels() {
+    regionLayer.querySelectorAll(".region-label").forEach((el) => {
+      const sx = transform.applyX(wx(+el.dataset.cx));
+      const sy = transform.applyY(wy(+el.dataset.cy));
+      el.style.left = sx + "px"; el.style.top = sy + "px";
+      el.style.display = (hovered || transform.k > 2.6) ? "none" : "block";
+      el.style.fontSize = Math.min(16, 12 + transform.k) + "px";
+    });
+  }
+
+  // Interaktion
+  function nodeAt(sx, sy) {
+    const inv = transform.invert([sx, sy]);
+    let best = null, bd = 14 * 14;
+    for (const n of nodes) {
+      if (hidden.has(n.type)) continue;
+      const dx = wx(n._px) - inv[0], dy = wy(n._py) - inv[1];
+      const d2 = dx * dx + dy * dy;
+      if (d2 < bd) { bd = d2; best = n; }
+    }
+    return best;
+  }
+  canvas.addEventListener("mousemove", (ev) => {
+    const r = canvas.getBoundingClientRect();
+    const n = nodeAt(ev.clientX - r.left, ev.clientY - r.top);
+    if (n !== hovered) { hovered = n; render(); canvas.style.cursor = n ? "pointer" : "grab"; }
+  });
+  canvas.addEventListener("click", (ev) => {
+    const r = canvas.getBoundingClientRect();
+    const n = nodeAt(ev.clientX - r.left, ev.clientY - r.top);
+    if (n) {
+      A.showNodeInPanel(panel, graph, n, { onNavigate: () => {} });
+      document.querySelector(".stage").classList.add("with-panel");
+    }
+  });
+  d3.select(canvas).call(d3.zoom().scaleExtent([0.5, 8]).on("zoom", (ev) => { transform = ev.transform; render(); }));
+
+  // Controls
+  const ctrls = bar.querySelector(".controls");
+  const mkToggle = (label, fn) => {
+    const c = document.createElement("span"); c.className = "chip"; c.textContent = label;
+    c.addEventListener("click", () => { c.classList.toggle("active"); fn(c.classList.contains("active")); });
+    ctrls.appendChild(c); return c;
+  };
+  mkToggle("Links zeigen", (on) => { showLinks = on; render(); });
+  mkToggle("Alter tönen", (on) => { ageTint = on; render(); });
+
+  A.initSearch(bar, graph, (n) => {
+    if (!proj.positions[n.id]) return;
+    const k = 3;
+    transform = d3.zoomIdentity.translate(W / 2 - wx(n._px) * k, H / 2 - wy(n._py) * k).scale(k);
+    d3.select(canvas).call(d3.zoom().transform, transform);
+    hovered = n; render();
+    A.showNodeInPanel(panel, graph, n, { onNavigate: () => {} });
+    document.querySelector(".stage").classList.add("with-panel");
+  });
+  A.buildLegend(graph, { onToggle: (t, active) => { if (active) hidden.delete(t); else hidden.add(t); computeContours(); render(); } });
+  A.buildHud(`${nodes.length} Knoten · ${proj.regions.length} Regionen · ${proj.method}`);
+
+  window.addEventListener("resize", () => { resize(); computeContours(); render(); });
+  resize();          // setzt W/H und rendert Punkte (contours noch null, guarded)
+  computeContours(); // braucht W/H
+  render();          // jetzt mit Themenhügeln
+})();
+</script>
+</body>
+</html>

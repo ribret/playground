@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E — Kuratier-Board · memory-atlas</title>
+<link rel="stylesheet" href="/shared/theme.css">
+<style>
+  #cy { width: 100%; height: 100%; }
+  #lanes { position: absolute; inset: 0; pointer-events: none; z-index: 1; display: flex; flex-direction: column; }
+  .lane { flex: 1; border-bottom: 1px dashed var(--border); position: relative; }
+  .lane:last-child { border-bottom: none; }
+  .lane .lane-name {
+    position: absolute; top: 8px; left: 14px; font-size: 12px; font-weight: 700;
+    color: var(--text-faint); text-transform: uppercase; letter-spacing: .08em;
+  }
+  .hint { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 40; color: var(--text-faint); font-size: 12px; text-align: center; }
+  #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-dim); z-index: 100; }
+</style>
+</head>
+<body>
+<div id="loading">Ordne Board…</div>
+<div class="stage">
+  <div id="lanes"></div>
+  <div id="cy"></div>
+</div>
+<div class="hint" id="hint"></div>
+
+<script src="/shared/vendor/cytoscape.min.js"></script>
+<script src="/shared/vendor/layout-base.js"></script>
+<script src="/shared/vendor/cose-base.js"></script>
+<script src="/shared/vendor/cytoscape-fcose.js"></script>
+<script src="/shared/vendor/cytoscape-edgehandles.js"></script>
+<script src="/shared/api.js"></script>
+<script>
+function showErr(msg) {
+  const l = document.getElementById("loading");
+  if (l) l.innerHTML = "<div style='max-width:700px;color:#ef5350;font-family:monospace;font-size:12px;white-space:pre-wrap'>FEHLER: " + msg + "</div>";
+}
+window.addEventListener("error", (e) => showErr((e.message || e.error) + "\n" + (e.filename || "") + ":" + (e.lineno || "")));
+window.addEventListener("unhandledrejection", (e) => showErr("Promise: " + (e.reason && (e.reason.stack || e.reason.message || e.reason))));
+(async function () {
+  const A = window.Atlas;
+  const graph = await A.api.loadGraph();
+  A.applyTypeColors(graph.meta);
+  const bar = A.buildTopbar({ title: "E — Kuratier-Board", subtitle: "Wo lege ICH das hin?" });
+  const panel = A.buildPanel();
+  panel.querySelector(".close").addEventListener("click", () =>
+    document.querySelector(".stage").classList.remove("with-panel"));
+
+  if (window.cytoscapeFcose) cytoscape.use(window.cytoscapeFcose);
+  if (window.cytoscapeEdgehandles) cytoscape.use(window.cytoscapeEdgehandles);
+
+  const saved = (await A.api.loadPositions().catch(() => ({ positions: {} }))).positions || {};
+  const useTiers = graph.meta.tiers.length > 0;
+  // Board-Zonen: bei Memory die Tiers, bei Memex die größten Cluster
+  const zones = useTiers
+    ? graph.meta.tiers.filter((t) => t !== "geist")
+    : Object.entries(graph.meta.clusters).sort((a, b) => b[1].size - a[1].size).slice(0, 6).map(([id]) => id);
+  const zoneLabel = (z) => useTiers ? z : (graph.meta.clusters[z]?.label || z);
+  const zoneOf = (n) => useTiers ? (n.tier || zones[zones.length - 1]) : String(n.cluster);
+
+  // Lane-Hintergrund
+  const lanesEl = document.getElementById("lanes");
+  zones.forEach((z) => {
+    const d = document.createElement("div"); d.className = "lane";
+    d.innerHTML = `<span class="lane-name">${A.escapeHtml(zoneLabel(z))}</span>`;
+    lanesEl.appendChild(d);
+  });
+
+  const H = window.innerHeight - 52, W = window.innerWidth;
+  const laneH = H / zones.length;
+  const zoneIndex = new Map(zones.map((z, i) => [z, i]));
+
+  // Elemente
+  const elements = [];
+  for (const n of graph.nodes) {
+    if (n.ghost) continue;
+    const z = zoneOf(n);
+    const zi = zoneIndex.has(z) ? zoneIndex.get(z) : zones.length - 1;
+    const pos = saved[n.id];
+    elements.push({
+      data: { id: n.id, label: n.label, type: n.type, _node: n, zi },
+      position: pos ? { x: pos.x, y: pos.y } : undefined,
+    });
+  }
+  const present = new Set(elements.map((e) => e.data.id));
+  for (const e of graph.edges) {
+    if (present.has(e.source) && present.has(e.target))
+      elements.push({ data: { id: "e_" + e.source + "__" + e.target, source: e.source, target: e.target, kind: e.kind } });
+  }
+
+  const cy = cytoscape({
+    container: document.getElementById("cy"),
+    elements,
+    wheelSensitivity: 0.2,
+    style: [
+      { selector: "node", style: {
+        "background-color": (n) => A.typeColor(graph.meta, n.data("type")),
+        "label": "data(label)", "font-size": 9, "color": "#c8cede",
+        "text-valign": "bottom", "text-margin-y": 3, "width": (n) => 12 + Math.sqrt(n.data("_node").degree) * 5,
+        "height": (n) => 12 + Math.sqrt(n.data("_node").degree) * 5,
+        "text-max-width": 90, "text-wrap": "ellipsis",
+        "border-width": 1, "border-color": "rgba(0,0,0,0.4)",
+        "text-outline-color": "#0b0e14", "text-outline-width": 2,
+      }},
+      { selector: "edge", style: {
+        "width": 1, "line-color": "rgba(140,150,170,0.25)",
+        "curve-style": "straight",
+        "target-arrow-color": "rgba(140,150,170,0.4)",
+        "target-arrow-shape": (e) => e.data("kind") === "belongs_to" ? "triangle" : "none",
+        "arrow-scale": 0.7,
+      }},
+      { selector: "node:selected", style: { "border-color": "#2dd4bf", "border-width": 3 } },
+      { selector: ".hl", style: { "line-color": "#2dd4bf", "width": 2, "z-index": 10 } },
+      { selector: ".dim", style: { "opacity": 0.2 } },
+      { selector: ".eh-handle", style: { "background-color": "#2dd4bf", "width": 10, "height": 10 } },
+    ],
+  });
+
+  // Positionen: gespeicherte behalten, unplatzierte deterministisch in ihre Zone
+  // legen (Raster pro Zone — stabil ohne Zufall, gemäß Stabilitäts-Befund).
+  try {
+    // Knoten je Zone sammeln, um pro Zone ein sauberes Raster zu legen
+    const perZone = {};
+    cy.nodes().forEach((n) => {
+      if (saved[n.id()]) { n.position(saved[n.id()]); return; }
+      const zi = n.data("zi");
+      (perZone[zi] = perZone[zi] || []).push(n);
+    });
+    const cols = Math.max(6, Math.floor((W - 120) / 95));
+    for (const zi of Object.keys(perZone)) {
+      const list = perZone[zi].sort((a, b) => b.data("_node").degree - a.data("_node").degree);
+      const rows = Math.ceil(list.length / cols);
+      const cellH = (laneH * 0.72) / Math.max(1, rows);
+      list.forEach((n, i) => {
+        const col = i % cols, row = Math.floor(i / cols);
+        n.position({
+          x: 90 + col * ((W - 180) / (cols - 1 || 1)),
+          y: laneH * (+zi) + laneH * 0.18 + row * cellH,
+        });
+      });
+    }
+    // Modell-Koordinaten = Bildschirm-Koordinaten, damit die Knoten in ihren
+    // CSS-Zonenbändern liegen (kein fit(), das die Ausrichtung zerstören würde).
+    cy.zoom(1); cy.pan({ x: 0, y: 0 });
+  } catch (err) {
+    // Fallback: einfaches Gitter, Board bleibt nutzbar
+    cy.nodes().forEach((n, i) => n.position({ x: 90 + (i % 12) * 80, y: 90 + Math.floor(i / 12) * 70 }));
+    cy.fit(cy.nodes(), 45);
+  }
+  const loadingEl = document.getElementById("loading");
+  if (loadingEl) loadingEl.remove();
+
+  // Drag → Position speichern + Tier-Wechsel erkennen
+  cy.on("dragfree", "node", (ev) => {
+    const n = ev.target;
+    const p = n.position();
+    A.api.savePositions({ [n.id()]: { x: Math.round(p.x), y: Math.round(p.y) } }).catch(() => {});
+    if (useTiers) {
+      const newZi = Math.max(0, Math.min(zones.length - 1, Math.floor(p.y / laneH)));
+      if (newZi !== n.data("zi")) {
+        const from = zones[n.data("zi")], to = zones[newZi];
+        n.data("zi", newZi);
+        A.api.logMutation({ op: "tier_change", id: n.id(), tier: to, detail: from + "→" + to });
+        A.toast(`Tier-Wechsel vorgemerkt: ${n.data("label")} → ${to}`);
+      }
+    }
+  });
+
+  // Kante ziehen (edgehandles) → als Link-Mutation loggen (kein MD-Write in Prototyp-Phase)
+  let eh = null;
+  if (cy.edgehandles) {
+    eh = cy.edgehandles({ hoverDelay: 120, snap: true, handleNodes: "node",
+      canConnect: (s, t) => !s.same(t),
+      edgeParams: () => ({ data: { kind: "inline", _draft: true } }) });
+    cy.on("ehcomplete", (ev, s, t, added) => {
+      added.addClass("hl");
+      A.api.logMutation({ op: "link_add", from_id: s.id(), to_id: t.id(), detail: s.data("label") + " → " + t.data("label") });
+      A.toast(`Link vorgemerkt: ${s.data("label")} → ${t.data("label")}`);
+    });
+  }
+
+  // Klick → Panel; Nachbarn hervorheben
+  cy.on("tap", "node", (ev) => {
+    const n = ev.target;
+    cy.elements().addClass("dim");
+    n.removeClass("dim"); n.neighborhood().removeClass("dim");
+    n.connectedEdges().addClass("hl");
+    A.showNodeInPanel(panel, graph, n.data("_node"), {
+      onNavigate: (t) => { const el = cy.getElementById(t.id); if (el) { cy.animate({ center: { eles: el }, zoom: 1.5 }, { duration: 400 }); } },
+    });
+    document.querySelector(".stage").classList.add("with-panel");
+  });
+  cy.on("tap", (ev) => { if (ev.target === cy) { cy.elements().removeClass("dim hl"); } });
+
+  // Controls
+  const ctrls = bar.querySelector(".controls");
+  const ehChip = document.createElement("span"); ehChip.className = "chip"; ehChip.textContent = "✏️ Kante ziehen";
+  let drawMode = false;
+  ehChip.addEventListener("click", () => {
+    drawMode = !drawMode; ehChip.classList.toggle("active", drawMode);
+    if (eh) drawMode ? eh.enableDrawMode() : eh.disableDrawMode();
+    A.toast(drawMode ? "Zeichenmodus an: von Knoten zu Knoten ziehen" : "Zeichenmodus aus");
+  });
+  ctrls.appendChild(ehChip);
+
+  const relayout = document.createElement("button"); relayout.className = "btn"; relayout.textContent = "Neu ordnen";
+  relayout.addEventListener("click", () => {
+    cy.layout({ name: "fcose", quality: "proof", randomize: true, animate: true, animationDuration: 700, nodeSeparation: 90 }).run();
+    A.toast("Auto-Layout — ziehe Knoten, um deine Ordnung zu setzen");
+  });
+  ctrls.appendChild(relayout);
+
+  A.initSearch(bar, graph, (n) => {
+    const el = cy.getElementById(n.id);
+    if (el && el.length) { cy.animate({ center: { eles: el }, zoom: 1.6 }, { duration: 400 }); el.select(); }
+  });
+  A.buildLegend(graph, { onToggle: (t, active) => {
+    cy.nodes(`[type = "${t}"]`).style("display", active ? "element" : "none");
+  }});
+  document.getElementById("hint").innerHTML =
+    useTiers
+      ? "Ziehe Knoten in eine andere Zone = Tier-Wechsel (vorgemerkt) · „Kante ziehen“ für neue Links · Positionen bleiben gespeichert"
+      : "Ordne Knoten frei an — deine Positionen bleiben gespeichert · „Kante ziehen“ für neue Links";
+  A.buildHud(`${present.size} Knoten · ${useTiers ? "Zonen = Tiers" : "Zonen = Top-Cluster"} · Änderungen → data/mutations.jsonl`);
+})();
+</script>
+</body>
+</html>
