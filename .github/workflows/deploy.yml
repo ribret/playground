@@ -26,9 +26,6 @@ jobs:
           port: 21
           local-dir: ./
           server-dir: ./
-          # Erster Lauf als dry-run: zeigt Server-Inhalt + geplante Uploads,
-          # schreibt nichts. Nach Prüfung auf false setzen.
-          dry-run: ${{ github.event_name == 'push' }}
           exclude: |
             **/.git*
             **/.git*/**
