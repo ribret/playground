@@ -49,3 +49,16 @@ jobs:
           else
             echo "::warning::200, aber erwarteter Inhalt (memory-atlas) nicht gefunden - server-dir prüfen"
           fi
+
+      - name: Datenschutz-Check (sensible Exports serverseitig redigiert?)
+        run: |
+          nodes=$(curl -s --user "${{ secrets.HTTP_LOGIN }}:${{ secrets.HTTP_PASSWORD }}" \
+            --max-time 25 "http://playground.bretzger.info/data/nodes_memory.json")
+          if echo "$nodes" | grep -qiE "julia|pascal|adhs|anlageprofil|rueckkehr"; then
+            echo "::error::LEAK: sensible Inhalte noch in nodes_memory.json auf dem Server"
+            exit 1
+          elif echo "$nodes" | grep -q '"removed":true'; then
+            echo "OK: nodes_memory.json ist serverseitig redigiert (removed:true)"
+          else
+            echo "::warning::nodes_memory.json unerwarteter Inhalt - manuell prüfen"
+          fi
