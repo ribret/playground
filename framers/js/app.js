@@ -4,7 +4,7 @@
   'use strict';
   const UI = {
     en: {
-      appTitle: 'Framers', appSub: 'An interactive learning companion to the book by Kenneth Cukier, Viktor Mayer-Schönberger and Francis de Véricourt',
+      appTitle: 'Framers', appSub: 'An interactive learning companion to the book by Kenneth Cukier, Viktor Mayer-Schönberger and Francis de Véricourt. Version 2: condensed, about 20 minutes per unit.',
       home: 'Home', glossary: 'Glossary', units: 'Learning units', overall: 'Overall progress', minutes: 'min', start: 'Start', continue: 'Continue', review: 'Review',
       hook: 'Why this matters', objectives: 'What you will be able to do', film: 'Explainer', sections: 'Core ideas', exercise: 'Try it', caseStudy: 'Case from the book', reflection: 'Your own case', quiz: 'Check yourself', flashcards: 'Flashcards', critique: 'Question the book', transfer: 'Transfer to leadership & AI', summary: 'In one screen', glossaryBlock: 'Terms from this unit',
       whyFilm: 'Watch first, read later: the pictures give you the skeleton the text hangs on.', whySections: 'Explained in our own words. Short quotes are marked.', whyExercise: 'Doing beats reading: retrieval and application make the idea stick.', whyReflection: 'Explaining a concept to yourself in your own words is itself a form of learning (chapter 3 shows why).', whyQuiz: 'Testing yourself is more effective than re-reading. Wrong answers are the useful ones.', whyFlash: 'Tap to flip. Come back in a few days for spaced repetition.', whyCritique: 'A book you only agree with has taught you nothing. These are the pressure points.', whyTransfer: 'Where does this bite in your own work?',
@@ -22,12 +22,12 @@
   };
 
   const state = {
-    lang: localStorage.getItem('framers.lang') || 'en',
-    progress: load('framers.progress', {}),
-    notes: load('framers.notes', {}),
+    lang: 'en',
+    progress: load('framers2.progress', {}),
+    notes: load('framers2.notes', {}),
   };
   function load(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
-  function save() { localStorage.setItem('framers.progress', JSON.stringify(state.progress)); localStorage.setItem('framers.notes', JSON.stringify(state.notes)); }
+  function save() { localStorage.setItem('framers2.progress', JSON.stringify(state.progress)); localStorage.setItem('framers2.notes', JSON.stringify(state.notes)); }
   const t = (o) => (o == null) ? '' : (typeof o === 'string' ? o : (o[state.lang] != null ? o[state.lang] : (o.en != null ? o.en : (o.de || ''))));
   const ui = (k) => (UI[state.lang] && UI[state.lang][k]) || UI.en[k] || k;
 
@@ -40,7 +40,7 @@
   };
 
   /* ---------- progress ---------- */
-  const BLOCKS = ['film', 'sections', 'exercise', 'reflection', 'quiz', 'flashcards', 'critique', 'transfer'];
+  const BLOCKS = ['film', 'sections', 'exercise', 'reflection', 'quiz', 'flashcards', 'critique'];
   function unitBlocks(u) { return BLOCKS.filter(b => b === 'sections' ? (u.sections && u.sections.length) : (b === 'reflection' ? !!u.reflection : (u[b] && (Array.isArray(u[b]) ? u[b].length : true)))); }
   function mark(uid, block, val) { state.progress[uid] = state.progress[uid] || {}; if (val === undefined) val = true; state.progress[uid][block] = val; save(); refreshProgressUI(); }
   function isDone(uid, block) { return !!(state.progress[uid] && state.progress[uid][block]); }
@@ -67,8 +67,7 @@
   /* ---------- top bar ---------- */
   function topbar(title, opts = {}) {
     const back = opts.back ? el('a', { class: 'iconbtn', href: opts.back, 'aria-label': ui('backHome') }, '←') : null;
-    const lt = el('div', { class: 'langtoggle', role: 'group', 'aria-label': 'Language' },
-      ...['de', 'en'].map(l => el('button', { class: l === state.lang ? 'on' : '', onclick: () => { state.lang = l; localStorage.setItem('framers.lang', l); render(); } }, l.toUpperCase())));
+    const lt = el('div', { class: 'vtag' }, 'v2');
     const bar = el('div', { class: 'topbar' }, el('div', { class: 'topbar-inner' }, back, el('div', { class: 'title' }, title), lt));
     if (opts.unit) bar.append(el('div', { class: 'progressline' }, el('div', { 'data-progress-unit': opts.unit.id, style: `width:${pct(opts.unit)}%` })));
     return bar;
@@ -141,7 +140,7 @@
     app.append(topbar(`${kindLabel(u)} · ${t(u.title)}`, { back: '#/', unit: u }));
     const c = el('div', { class: 'container' });
     c.append(el('div', { class: 'unithead' }, el('div', { class: 'kicker' }, kindLabel(u)), el('h1', null, t(u.title)), el('div', { class: 'tagline' }, t(u.tagline))));
-    const order = [['hook', 'hook'], ['objectives', 'objectives'], ['film', 'film'], ['sections', 'sections'], ['exercise', 'exercise'], ['caseStudy', 'caseStudy'], ['reflection', 'reflection'], ['quiz', 'quiz'], ['flashcards', 'flashcards'], ['critique', 'critique'], ['transfer', 'transfer'], ['summary', 'summary'], ['glossary', 'glossaryBlock']];
+    const order = [['hook', 'hook'], ['objectives', 'objectives'], ['film', 'film'], ['sections', 'sections'], ['exercise', 'exercise'], ['caseStudy', 'caseStudy'], ['reflection', 'reflection'], ['quiz', 'quiz'], ['flashcards', 'flashcards'], ['critique', 'critique'], ['summary', 'summary'], ['glossary', 'glossaryBlock']];
     const present = order.filter(([k]) => u[k] && (Array.isArray(u[k]) ? u[k].length : true));
     const nav = el('nav', { class: 'stepnav' });
     for (const [k, lbl] of present) nav.append(el('a', { href: `#${u.id}-${k}`, 'data-block': BLOCKS.includes(k) ? k : null, 'data-unit': u.id, class: BLOCKS.includes(k) && isDone(u.id, k) ? 'done' : '', onclick: (e) => { e.preventDefault(); document.getElementById(`${u.id}-${k}`).scrollIntoView({ behavior: 'smooth' }); } }, ui(lbl)));
@@ -232,14 +231,22 @@
       b.append(...blockHead(i, lbl, ui('whyQuiz')));
       let answered = 0, right = 0; const score = el('div', { class: 'score' });
       u.quiz.forEach((q, qi) => {
-        const qe = el('div', { class: 'q' }, htmlEl('div', 'qt', `${qi + 1}. ${t(q.q)}`));
+        const qe = el('div', { class: 'q' });
+        if (q.case) qe.append(htmlEl('div', 'qcase', t(q.case)));
+        qe.append(htmlEl('div', 'qt', `${qi + 1}. ${t(q.q)}`));
         const opts = el('div', { class: 'opts' });
-        q.options.forEach((o, oi) => opts.append(el('button', { onclick: (e) => {
-          qe.classList.add('answered'); answered++; const ok = oi === q.answer; if (ok) right++;
-          e.currentTarget.classList.add(ok ? 'right' : 'wrong'); opts.children[q.answer].classList.add('right');
-          if (answered === u.quiz.length) { score.textContent = `${ui('yourScore')}: ${right} ${ui('ofN')} ${u.quiz.length} ${ui('correct')}.`; mark(u.id, 'quiz'); }
-        } }, t(o))));
-        qe.append(opts, htmlEl('div', 'explain', t(q.explain)));
+        const order = shuffle(q.options.map((o, oi) => oi), 31 + qi * 7 + u.number * 13);
+        order.forEach((oi) => {
+          const o = q.options[oi]; const text = (o && o.text != null) ? o.text : o; const why = o && o.why;
+          const btn = el('button', { onclick: () => {
+            if (qe.classList.contains('answered')) return;
+            qe.classList.add('answered'); answered++; const ok = oi === q.answer; if (ok) right++;
+            btn.classList.add(ok ? 'right' : 'wrong', 'picked'); opts.querySelector(`[data-oi="${q.answer}"]`).classList.add('right');
+            if (answered === u.quiz.length) { score.textContent = `${ui('yourScore')}: ${right} ${ui('ofN')} ${u.quiz.length} ${ui('correct')}.`; mark(u.id, 'quiz'); }
+          }, 'data-oi': oi }, htmlEl('span', 'otext', t(text)), why ? htmlEl('span', 'owhy', (oi === q.answer ? '<b>Why this is right:</b> ' : '<b>Why not:</b> ') + t(why)) : null);
+          opts.append(btn);
+        });
+        qe.append(opts, q.explain ? htmlEl('div', 'explain', '<b>Takeaway:</b> ' + t(q.explain)) : null);
         b.append(qe);
       });
       b.append(score);

@@ -1,39 +1,38 @@
-/* u00 — Orientierung / Orientation. Reference unit: shows every block type. */
+/* u00 Orientation (V2, English only). */
 (function () {
   const P = V.palette;
-  const de = (lang) => lang === 'de';
 
   /* ---------- film scenes ---------- */
   const scenes = [
-    { duration: 5000, caption: { en: '<b>Reality is a flood.</b> Every moment delivers more signals than any mind can process.', de: '<b>Die Wirklichkeit ist eine Flut.</b> Jeder Moment liefert mehr Signale, als ein Kopf verarbeiten kann.' },
+    { duration: 5000, caption: '<b>Reality is a flood.</b> Every moment delivers more signals than any mind can process.',
       svg: (l) => V.wrap(V.dots(90, 20, 20, 360, 220, { seed: 3, stagger: .03, cls: 'a-fade', fill: P.muted, r: 4 }) + V.person(200, 150, { color: P.ink, cls: 'a-pop', delay: .8, scale: 1.3 })) },
-    { duration: 5500, caption: { en: '<b>A frame selects.</b> A mental model decides what counts and what can be ignored. Inside the frame, order appears.', de: '<b>Ein Frame wählt aus.</b> Ein mentales Modell entscheidet, was zählt und was ignoriert werden darf. Im Frame entsteht Ordnung.' },
+    { duration: 5500, caption: '<b>A frame selects.</b> A mental model decides what counts and what can be ignored. Inside the frame, order appears.',
       svg: (l) => V.wrap(V.dots(70, 10, 10, 380, 240, { seed: 3, fill: P.line, r: 3.5 }) + V.frame(110, 55, 180, 150, { label: 'Frame', cls: 'a-pop' }) +
         [0, 1, 2, 3].map(r => [0, 1, 2].map(c => V.circle(140 + c * 60, 85 + r * 34, 6, { fill: P.coral, cls: 'a-pop', delay: .6 + (r * 3 + c) * .08 })).join('')).join('')) },
-    { duration: 6500, caption: { en: '<b>Three ingredients make a frame work.</b> Causality explains, counterfactuals imagine alternatives, constraints keep the imagining useful.', de: '<b>Drei Zutaten lassen einen Frame arbeiten.</b> Kausalität erklärt, Kontrafaktisches denkt Alternativen, Constraints halten das Denken brauchbar.' },
-      svg: (l) => V.wrap(V.threeC(200, 110, l) + V.text(200, 210, de(l) ? 'Anwenden eines Frames = die 3 C zusammen' : 'Applying a frame = the three C together', { size: 13, fill: P.ink2 || P.ink, cls: 'a-fade', delay: 1.2 })) },
-    { duration: 5500, caption: { en: '<b>Frames generate options.</b> Not answers: options. Decisions get better because we see more of what we could do.', de: '<b>Frames erzeugen Optionen.</b> Keine Antworten, sondern Optionen. Entscheidungen werden besser, weil wir mehr sehen, was wir tun könnten.' },
+    { duration: 6500, caption: '<b>Three ingredients make a frame work.</b> Causality explains, counterfactuals imagine alternatives, constraints keep the imagining useful.',
+      svg: (l) => V.wrap(V.threeC(200, 110, l) + V.text(200, 210, 'Applying a frame = the three C together', { size: 13, fill: P.ink2 || P.ink, cls: 'a-fade', delay: 1.2 })) },
+    { duration: 5500, caption: '<b>Frames generate options.</b> Not answers: options. Decisions improve because we see more of what we could do.',
       svg: (l) => V.wrap(V.frame(40, 70, 150, 120, { label: 'Frame', cls: 'a-fade' }) + V.arrow(195, 130, 240, 130, { color: 'ink', cls: 'a-draw', delay: .4 }) +
-        [0, 1, 2, 3].map(i => V.bulb(280 + (i % 2) * 60, 95 + Math.floor(i / 2) * 70, { cls: 'a-pop', delay: .9 + i * .25 })).join('') + V.text(310, 225, de(l) ? 'Optionen' : 'Options', { size: 13, bold: true, cls: 'a-fade', delay: 2 })) },
-    { duration: 6000, caption: { en: '<b>Sometimes the frame no longer fits.</b> Then we reframe: pick another from our repertoire, borrow one from elsewhere, or invent one. Rare and risky, but powerful.', de: '<b>Manchmal passt der Frame nicht mehr.</b> Dann reframen wir: einen anderen aus dem Repertoire nehmen, einen aus einem fremden Feld borgen oder einen neu erfinden. Selten und riskant, aber wirksam.' },
-      svg: (l) => V.wrap(V.group(V.frame(60, 70, 150, 120, { label: de(l) ? 'alt' : 'old', color: P.muted }), { cls: 'a-fade' }) + V.text(135, 140, '✕', { size: 40, fill: P.muted, cls: 'a-pop', delay: .7 }) + V.group(V.frame(200, 70, 150, 120, { label: de(l) ? 'neu' : 'new', color: P.teal }), { cls: 'a-slide', delay: 1.4 })) },
-    { duration: 6000, caption: { en: '<b>Many frames beat one.</b> For people, teams and societies: diversity of frames is the insurance policy for times of change.', de: '<b>Viele Frames schlagen einen.</b> Für Menschen, Teams und Gesellschaften: Vielfalt der Frames ist die Versicherung für Zeiten des Wandels.' },
-      svg: (l) => V.wrap([P.coral, P.teal, P.plum, P.amber, P.sky, P.ok, P.coral, P.teal].map((c, i) => V.frame(28 + (i % 4) * 90, 45 + Math.floor(i / 4) * 95, 70, 70, { color: c, cls: 'a-pop', delay: i * .15 })).join('') + V.text(200, 245, de(l) ? 'Frame-Pluralismus' : 'Frame pluralism', { size: 13, bold: true, cls: 'a-fade', delay: 1.5 })) },
-    { duration: 7000, caption: { en: '<b>The map of the book.</b> Units 1–5 build the model, 6–7 explain how to switch and learn, 8–9 move to society and the machine.', de: '<b>Die Landkarte des Buchs.</b> Einheiten 1 bis 5 bauen das Modell, 6 und 7 erklären Wechsel und Lernen, 8 und 9 gehen zu Gesellschaft und Maschine.' },
+        [0, 1, 2, 3].map(i => V.bulb(280 + (i % 2) * 60, 95 + Math.floor(i / 2) * 70, { cls: 'a-pop', delay: .9 + i * .25 })).join('') + V.text(310, 225, 'Options', { size: 13, bold: true, cls: 'a-fade', delay: 2 })) },
+    { duration: 6000, caption: '<b>Sometimes the frame no longer fits.</b> Then we reframe: from our repertoire, by borrowing from another field, or by inventing. Rare and risky, but powerful.',
+      svg: (l) => V.wrap(V.group(V.frame(60, 70, 150, 120, { label: 'old', color: P.muted }), { cls: 'a-fade' }) + V.text(135, 140, '✕', { size: 40, fill: P.muted, cls: 'a-pop', delay: .7 }) + V.group(V.frame(200, 70, 150, 120, { label: 'new', color: P.teal }), { cls: 'a-slide', delay: 1.4 })) },
+    { duration: 6000, caption: '<b>Many frames beat one.</b> For people, teams and societies, a diversity of frames is the insurance policy for times of change.',
+      svg: (l) => V.wrap([P.coral, P.teal, P.plum, P.amber, P.sky, P.ok, P.coral, P.teal].map((c, i) => V.frame(28 + (i % 4) * 90, 45 + Math.floor(i / 4) * 95, 70, 70, { color: c, cls: 'a-pop', delay: i * .15 })).join('') + V.text(200, 245, 'Frame pluralism', { size: 13, bold: true, cls: 'a-fade', delay: 1.5 })) },
+    { duration: 7000, caption: '<b>The map of the book.</b> Units 1 to 5 build the model, 6 and 7 explain switching and learning, 8 and 9 move to society and the machine.',
       svg: (l) => {
-        const names = de(l) ? ['Entscheiden', 'Framing', 'Kausalität', 'Kontrafakt.', 'Constraints', 'Reframing', 'Lernen', 'Pluralismus', 'Vigilanz'] : ['Decisions', 'Framing', 'Causality', 'Counterfact.', 'Constraints', 'Reframing', 'Learning', 'Pluralism', 'Vigilance'];
+        const names = ['Decisions', 'Framing', 'Causality', 'Counterfact.', 'Constraints', 'Reframing', 'Learning', 'Pluralism', 'Vigilance'];
         const cols = [P.coral, P.sky, P.coral, P.teal, P.plum, P.amber, P.teal, P.sky, P.coral];
         let s = V.line(28, 130, 372, 130, { stroke: P.line, sw: 3, cls: 'a-draw' });
         names.forEach((n, i) => { const x = 36 + i * 41; const up = i % 2 === 0; s += V.circle(x, 130, 13, { fill: cols[i], cls: 'a-pop', delay: .3 + i * .15 }) + V.text(x, 134.5, String(i + 1), { size: 12, fill: '#fff', bold: true, cls: 'a-fade', delay: .3 + i * .15 }) + V.line(x, up ? 117 : 143, x, up ? 104 : 156, { stroke: P.line, sw: 1.5 }) + V.text(x, up ? 96 : 172, n, { size: 10.5, bold: true, cls: 'a-fade', delay: .5 + i * .15 }); });
-        s += V.text(118, 230, de(l) ? '1 bis 5: das Modell' : '1 to 5: the model', { size: 11, fill: P.muted, cls: 'a-fade', delay: 1.8 }) + V.text(282, 230, de(l) ? '6 bis 9: Wechsel, Lernen, Gesellschaft' : '6 to 9: switching, learning, society', { size: 11, fill: P.muted, cls: 'a-fade', delay: 2 });
+        s += V.text(118, 230, '1 to 5: the model', { size: 11, fill: P.muted, cls: 'a-fade', delay: 1.8 }) + V.text(282, 230, '6 to 9: switching, learning, society', { size: 11, fill: P.muted, cls: 'a-fade', delay: 2 });
         return V.wrap(s);
       } },
   ];
 
   /* ---------- custom exercise: the constraint dial ---------- */
   function renderDial(host, ctx) {
-    const { lang, el, htmlEl, done } = ctx; const l = de(lang);
-    const lbl = el('div', { html: `<span class="slider-val">4</span> ${de(l) ? 'Constraints' : 'constraints'}` });
+    const { el, htmlEl, done } = ctx;
+    const lbl = el('div', { html: '<span class="slider-val">4</span> constraints' });
     const range = el('input', { type: 'range', min: 0, max: 10, value: 4, 'aria-label': 'constraints' });
     const fig = el('figure'); const msg = htmlEl('div', 'ex-result', '');
     function draw(n) {
@@ -42,13 +41,13 @@
       let s = V.frame(20, 20, 360, 190, { color: P.plum, label: 'Frame' });
       let seed = 11; const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
       for (let i = 0; i < kept; i++) { const u = i < useful; s += V.bulb(45 + rnd() * 310, 60 + rnd() * 120, { color: u ? P.amber : P.line, scale: u ? 1 : .7 }); }
-      s += V.text(200, 240, l ? `${kept} Optionen, davon ${useful} brauchbar` : `${kept} options, ${useful} of them useful`, { size: 13, bold: true });
+      s += V.text(200, 240, `${kept} options, ${useful} of them useful`, { size: 13, bold: true });
       fig.innerHTML = V.wrap(s);
       lbl.querySelector('.slider-val').textContent = n;
-      const m = n <= 1 ? (de(l) ? 'Fast keine Constraints: ein Meer von Optionen, kaum eine brauchbar. Du ertrinkst in Möglichkeiten (das ist Dennetts Roboter, Kapitel 2).' : 'Almost no constraints: a sea of options, hardly any useful. You drown in possibilities (Dennett\'s robot, chapter 2).')
-        : n <= 5 ? (de(l) ? 'Der Sweet Spot: wenige, aber brauchbare Optionen. Der Suchraum ist klein genug, um zu entscheiden, und groß genug, um nichts Wichtiges zu übersehen.' : 'The sweet spot: few but useful options. The search space is small enough to decide and large enough not to miss something important.')
-          : n <= 7 ? (de(l) ? 'Eng: schnell, aber du verpasst wahrscheinlich bessere Lösungen. Gut, wenn Tempo zählt und die Lage vertraut ist.' : 'Tight: fast, but you probably miss better solutions. Fine when speed matters and the situation is familiar.')
-            : (de(l) ? 'Zu viele Constraints: kein Spielraum mehr. Der Frame erklärt die Lage, erzeugt aber keine Handlungsoptionen (Kapitel 6 nennt das den Verlust von Agency).' : 'Too many constraints: no room left. The frame explains the situation but produces no options for action (chapter 6 calls this a loss of agency).');
+      const m = n <= 1 ? 'Almost no constraints: a sea of options, hardly any useful. You drown in possibilities.'
+        : n <= 5 ? 'The sweet spot: few but useful options. Small enough to decide, large enough not to miss something important.'
+          : n <= 7 ? 'Tight: fast, but you probably miss better solutions. Fine when speed matters and the situation is familiar.'
+            : 'Too many constraints: no room left. The frame explains the situation but produces no options for action.';
       msg.textContent = m; msg.className = 'ex-result' + (n >= 2 && n <= 5 ? ' good' : '');
     }
     let touched = 0; range.addEventListener('input', () => { draw(+range.value); if (++touched >= 3) done(); });
@@ -56,121 +55,134 @@
   }
 
   window.FRAMERS.register({
-    id: 'u00', number: 0, kind: 'intro', color: '#5B6B8C', minutes: 15,
-    title: { en: 'Orientation', de: 'Orientierung' },
-    tagline: { en: 'What the book claims, how this platform works, and what a frame actually is.', de: 'Was das Buch behauptet, wie diese Plattform funktioniert und was ein Frame eigentlich ist.' },
+    id: 'u00', number: 0, kind: 'intro', color: '#5B6B8C', minutes: 20,
+    title: 'Orientation',
+    tagline: 'What the book claims, what a frame actually is, and how this platform works.',
     icon: (c) => `<svg viewBox="0 0 44 44"><rect x="7" y="9" width="30" height="26" rx="5" fill="none" stroke="${c}" stroke-width="3"/><circle cx="22" cy="22" r="5" fill="${c}"/></svg>`,
-    hook: {
-      en: '<p>In 2020 a team at MIT found a new antibiotic by training a model on which molecules kill bacteria rather than which ones look like known drugs. Headlines said: AI did it. The authors of <em>Framers</em> say: a human did it, by changing how the problem was seen. That shift of perspective, done deliberately, is what this book is about.</p><p>This unit gives you the skeleton. Every later unit hangs on it.</p>',
-      de: '<p>2020 fand ein Team am MIT ein neues Antibiotikum, indem es ein Modell darauf trainierte, welche Moleküle Bakterien töten, statt welche bekannten Wirkstoffen ähneln. Die Schlagzeilen sagten: Die KI hat es geschafft. Die Autoren von <em>Framers</em> sagen: Ein Mensch hat es geschafft, indem er die Sicht auf das Problem verändert hat. Dieser bewusst vollzogene Perspektivwechsel ist das Thema des Buchs.</p><p>Diese Einheit gibt dir das Gerüst. Jede spätere Einheit hängt daran.</p>'
-    },
+    hook: '<p>In 2020 an MIT team found a new antibiotic with machine learning. Headlines said: AI did it. The authors of <em>Framers</em> say: humans did it, by changing how the problem was seen. That deliberate shift of perspective is what the book is about, and this unit gives you its skeleton.</p>',
     objectives: [
-      { en: 'Explain in two sentences what the authors mean by a frame and why framing, not data, is the source of good decisions.', de: 'In zwei Sätzen erklären, was die Autoren unter einem Frame verstehen und warum Framing, nicht Daten, die Quelle guter Entscheidungen ist.' },
-      { en: 'Name the three elements of applying a frame and the three ways of reframing.', de: 'Die drei Elemente des Anwendens eines Frames und die drei Wege des Reframings nennen.' },
-      { en: 'Use this platform efficiently: explainer first, then text, then testing yourself.', de: 'Die Plattform effizient nutzen: erst Erklärfilm, dann Text, dann Selbsttest.' },
+      'Explain what the authors mean by a frame and why framing, not data alone, drives good decisions.',
+      'Distinguish applying a frame (the three C) from reframing (repertoire, repurposing, reinvention).',
+      'Tell the book\'s framing apart from Kahneman and Tversky\'s framing effect.',
     ],
-    film: { title: { en: 'The whole book in seven scenes', de: 'Das ganze Buch in sieben Szenen' }, scenes },
+    film: { title: 'The whole book in seven scenes', scenes },
     sections: [
-      { id: 's1', heading: { en: 'What a frame is (and is not)', de: 'Was ein Frame ist (und was nicht)' },
-        body: {
-          en: '<p>A frame is a mental model: a simplified representation of how some part of the world works. It tells you what matters, what causes what, and what might happen if you act. Democracy is a frame, so is lean manufacturing, so is “the economy is like a machine”. Frames are not opinions and not values; they are the lens through which options become visible.</p><p>The authors borrow the word from decision science but use it differently from Kahneman and Tversky. For them the “framing effect” was a flaw: people choose differently depending on whether an outcome is worded as gain or loss. In <em>Framers</em>, framing is a <strong>capability</strong>: the deliberate act of choosing and applying a mental model before deciding.</p><p>Two things follow. First, you cannot not frame. “Thinking outside the box” is a myth; you only ever swap one box for another. Second, there are no bad frames, only frames that fit a situation badly. The single exception comes in chapter 8: a frame that denies the existence of other frames.</p>',
-          de: '<p>Ein Frame ist ein mentales Modell: eine vereinfachte Darstellung davon, wie ein Ausschnitt der Welt funktioniert. Er sagt dir, was zählt, was was verursacht und was passieren könnte, wenn du handelst. Demokratie ist ein Frame, Lean Management ist einer, „die Wirtschaft ist wie eine Maschine“ ebenfalls. Frames sind keine Meinungen und keine Werte; sie sind die Linse, durch die Optionen sichtbar werden.</p><p>Die Autoren entleihen das Wort der Entscheidungsforschung, nutzen es aber anders als Kahneman und Tversky. Dort war der „Framing-Effekt“ ein Fehler: Menschen entscheiden anders, je nachdem, ob ein Ergebnis als Gewinn oder Verlust formuliert ist. In <em>Framers</em> ist Framing eine <strong>Fähigkeit</strong>: der bewusste Akt, ein mentales Modell zu wählen und anzuwenden, bevor man entscheidet.</p><p>Zwei Dinge folgen daraus. Erstens: Du kannst nicht nicht framen. „Thinking outside the box“ ist ein Mythos; du tauschst immer nur eine Box gegen eine andere. Zweitens: Es gibt keine schlechten Frames, nur Frames, die schlecht zu einer Situation passen. Die einzige Ausnahme kommt in Kapitel 8: ein Frame, der die Existenz anderer Frames leugnet.</p>'
-        },
-        visual: { caption: { en: 'Same situation, two frames, two sets of options. The frame determines what you can even consider.', de: 'Gleiche Situation, zwei Frames, zwei Optionsmengen. Der Frame bestimmt, was du überhaupt erwägen kannst.' },
-          svg: (l) => V.wrap(V.circle(200, 130, 34, { fill: P.ink }) + V.text(200, 135, de(l) ? 'Lage' : 'Situation', { size: 12, fill: '#fff', bold: true }) +
-            V.frame(20, 40, 120, 180, { color: P.coral, label: de(l) ? 'Frame A' : 'Frame A', cls: 'a-fade' }) + V.frame(260, 40, 120, 180, { color: P.teal, label: 'Frame B', cls: 'a-fade', delay: .3 }) +
+      { id: 's1', heading: 'What a frame is (and is not)',
+        body: '<p>A frame is a mental model: a simplified representation of how part of the world works. It tells you what matters, what causes what, and what might happen if you act. Frames are not opinions; they are the lens through which options become visible. The same mask mandate looked obvious under a health frame and outrageous under a freedom frame: same data, opposite conclusions.</p><p>The word comes from decision science, but the meaning shifts. For Kahneman and Tversky the "framing effect" was a flaw: choices change with the wording of outcomes. In <em>Framers</em>, framing is a <strong>capability</strong>: deliberately choosing and applying a mental model before deciding.</p><p>Two things follow. You cannot think without a frame; you only swap one box for another. And there are no bad frames, only frames that fit a situation badly, with one exception: a frame that denies other frames.</p>',
+        visual: { caption: 'Same situation, two frames, two sets of options. The frame determines what you can even consider.',
+          svg: (l) => V.wrap(V.circle(200, 130, 34, { fill: P.ink }) + V.text(200, 135, 'Situation', { size: 12, fill: '#fff', bold: true }) +
+            V.frame(20, 40, 120, 180, { color: P.coral, label: 'Frame A', cls: 'a-fade' }) + V.frame(260, 40, 120, 180, { color: P.teal, label: 'Frame B', cls: 'a-fade', delay: .3 }) +
             V.arrow(166, 130, 142, 130, { color: 'coral', cls: 'a-draw', delay: .5 }) + V.arrow(234, 130, 258, 130, { color: 'teal', cls: 'a-draw', delay: .5 }) +
             [0, 1, 2].map(i => V.bulb(55 + i * 28, 150, { cls: 'a-pop', delay: 1 + i * .2, scale: .8 })).join('') + [0, 1].map(i => V.bulb(300 + i * 40, 150, { cls: 'a-pop', delay: 1 + i * .2, scale: .8 })).join('') +
-            V.text(80, 200, de(l) ? 'Optionen A' : 'Options A', { size: 11 }) + V.text(320, 200, de(l) ? 'Optionen B' : 'Options B', { size: 11 })) },
-        keyIdea: { en: 'Framing is not what you know. It is the lens that decides which of the things you know become options.', de: 'Framing ist nicht, was du weißt. Es ist die Linse, die entscheidet, welche Dinge, die du weißt, zu Optionen werden.' } },
-      { id: 's2', heading: { en: 'Two activities, very different in nature', de: 'Zwei Tätigkeiten, sehr verschieden in ihrer Natur' },
-        body: {
-          en: '<p>The book separates two things that everyday language blurs. <strong>Applying a frame</strong> is what we do most of the time: inside a given mental model we reason causally, imagine alternatives and bound those alternatives with constraints. It is fast, trainable, and improves with practice. <strong>Reframing</strong> means switching the model itself: taking another from your repertoire, repurposing one from a different field, or inventing a new one. It is rare, costly, and does not get better with repetition. A lot of bad advice comes from confusing the two, for example treating every problem as an occasion for “radical rethinking”.</p><p>The three ways of reframing are ordered by frequency and difficulty: repertoire (most common, easiest), repurposing, reinvention (rarest, hardest). Chapter 6 adds a twist: a broad enough frame lets you stay inside it and just loosen constraints, which is often the smarter path.</p>',
-          de: '<p>Das Buch trennt zwei Dinge, die die Alltagssprache verwischt. <strong>Einen Frame anwenden</strong> tun wir fast immer: Innerhalb eines mentalen Modells denken wir kausal, stellen uns Alternativen vor und begrenzen sie mit Constraints. Das geht schnell, ist trainierbar und wird durch Übung besser. <strong>Reframing</strong> heißt, das Modell selbst zu wechseln: ein anderes aus dem Repertoire nehmen, eines aus einem fremden Feld umnutzen oder ein neues erfinden. Das ist selten, teuer und wird durch Wiederholung nicht besser. Viele schlechte Ratschläge entstehen, weil beides verwechselt wird, etwa wenn jedes Problem zum Anlass für „radikales Umdenken“ wird.</p><p>Die drei Wege des Reframings sind nach Häufigkeit und Schwierigkeit geordnet: Repertoire (am häufigsten, am leichtesten), Repurposing, Reinvention (am seltensten, am schwersten). Kapitel 6 ergänzt eine Pointe: Ein hinreichend breiter Frame erlaubt es, darin zu bleiben und nur die Constraints zu lockern, was oft der klügere Weg ist.</p>'
-        },
-        visual: { caption: { en: 'Inside the frame: fast, frequent, trainable. Switching the frame: rare, risky, insight-driven.', de: 'Im Frame: schnell, häufig, trainierbar. Frame wechseln: selten, riskant, einsichtsgetrieben.' },
+            V.text(80, 200, 'Options A', { size: 12 }) + V.text(320, 200, 'Options B', { size: 12 })) },
+        keyIdea: 'Framing is not what you know. It is the lens that decides which of the things you know become options.' },
+      { id: 's2', heading: 'Two activities, very different in nature',
+        body: '<p>The book separates two things everyday language blurs. <strong>Applying a frame</strong> is what we do most of the time: inside a given model we reason causally, imagine alternatives (counterfactuals) and bound them with constraints. It is fast, trainable and improves with practice.</p><p><strong>Reframing</strong> means switching the model itself: taking another from your <em>repertoire</em>, <em>repurposing</em> one from a different field, or <em>reinventing</em> one from scratch. The routes are ordered from most common to rarest. Reframing is costly, risky and does not get reliably better with repetition. Much bad advice comes from confusing the two, for example treating every problem as a call for "radical rethinking" when loosening a constraint inside a broad frame would do.</p>',
+        visual: { caption: 'Inside the frame: fast, frequent, trainable. Switching the frame: rare, risky, insight-driven.',
           svg: (l) => V.wrap(V.rect(20, 30, 170, 200, { fill: P.paper, stroke: P.line, r: 14 }) + V.rect(210, 30, 170, 200, { fill: P.paper, stroke: P.line, r: 14 }) +
-            V.text(105, 56, de(l) ? 'Frame anwenden' : 'Apply a frame', { size: 13, bold: true }) + V.text(295, 56, de(l) ? 'Frame wechseln' : 'Switch the frame', { size: 13, bold: true }) +
+            V.text(105, 56, 'Apply a frame', { size: 13, bold: true }) + V.text(295, 56, 'Switch the frame', { size: 13, bold: true }) +
             V.threeC(105, 120, l, { gap: 50, delay: .2 }) +
             V.group(V.frame(235, 80, 50, 50, { color: P.muted }) + V.frame(300, 80, 60, 60, { color: P.teal }) + V.arrow(288, 105, 298, 105, { color: 'ink' }), { cls: 'a-fade', delay: .8 }) +
-            V.text(105, 200, de(l) ? 'schnell · häufig · übbar' : 'fast · frequent · trainable', { size: 11, fill: P.muted, cls: 'a-fade', delay: 1.2 }) + V.text(295, 200, de(l) ? 'selten · riskant · Einsicht' : 'rare · risky · insight', { size: 11, fill: P.muted, cls: 'a-fade', delay: 1.2 })) } },
-      { id: 's3', heading: { en: 'How to work with this platform', de: 'Wie du mit dieser Plattform arbeitest' },
-        body: {
-          en: '<p>Each unit follows the same path, and the order is deliberate.</p><ol><li><strong>Explainer first.</strong> A short animated sequence gives you the structure before the words. Dual coding (picture plus language) is one of the most robust findings in learning research.</li><li><strong>Core ideas</strong> in our own words, each anchored in a case from the chapter.</li><li><strong>Try it:</strong> an interactive exercise. Doing retrieves and applies, reading only recognises.</li><li><strong>Your own case:</strong> write a few sentences. Chapter 3 shows that explaining is itself learning (Lombrozo’s “learning by explaining”). The platform practises what the book preaches.</li><li><strong>Self-test and flashcards</strong> for retrieval practice; come back after a few days.</li><li><strong>Question the book</strong> and <strong>transfer</strong>: the parts that make the difference between knowing a book and being able to use it.</li></ol><p>Progress and notes stay on this device (no server, no account). The language switch at the top changes everything, including the pictures.</p>',
-          de: '<p>Jede Einheit folgt demselben Pfad, und die Reihenfolge ist Absicht.</p><ol><li><strong>Erst der Erklärfilm.</strong> Eine kurze animierte Sequenz gibt dir die Struktur vor den Worten. Dual Coding (Bild plus Sprache) ist einer der robustesten Befunde der Lernforschung.</li><li><strong>Kernideen</strong> in eigenen Worten, jede an einem Fall aus dem Kapitel verankert.</li><li><strong>Ausprobieren:</strong> eine interaktive Übung. Tun ruft ab und wendet an, Lesen erkennt nur wieder.</li><li><strong>Dein eigener Fall:</strong> schreib ein paar Sätze. Kapitel 3 zeigt, dass Erklären selbst Lernen ist (Lombrozos „Learning by Explaining“). Die Plattform praktiziert, was das Buch predigt.</li><li><strong>Selbsttest und Lernkarten</strong> zum Abrufen; nach ein paar Tagen wiederkommen.</li><li><strong>Das Buch hinterfragen</strong> und <strong>Transfer</strong>: die Teile, die den Unterschied ausmachen zwischen ein Buch kennen und es nutzen können.</li></ol><p>Fortschritt und Notizen bleiben auf diesem Gerät (kein Server, kein Konto). Der Sprachschalter oben wechselt alles, auch die Bilder.</p>'
-        } },
+            V.text(105, 200, 'fast · frequent · trainable', { size: 12, fill: P.muted, cls: 'a-fade', delay: 1.2 }) + V.text(295, 200, 'rare · risky · insight', { size: 12, fill: P.muted, cls: 'a-fade', delay: 1.2 })) } },
+      { id: 's3', heading: 'Two dead ends, and how to use this platform',
+        body: '<p>The book argues against two shortcuts. <strong>Hyper-rationalists</strong> want to hand decisions to data and algorithms; <strong>emotionalists</strong> want to follow impulse. Both still frame, only without noticing. The authors\' claim: machines search inside frames that humans set, so the human skill of framing becomes more important as AI spreads, not less.</p><p>Each unit follows the same path. The <strong>explainer</strong> gives you the structure before the words. <strong>Core ideas</strong> anchor each concept in a case. The <strong>exercise</strong> makes you apply rather than recognise. <strong>Reflection</strong> asks you to explain in your own words, which is itself learning. The <strong>self-test</strong> uses real cases, and the <strong>critique</strong> separates knowing a book from judging it. Progress and notes stay on this device.</p>' },
     ],
     exercise: {
       type: 'custom',
-      title: { en: 'The constraint dial', de: 'Der Constraint-Regler' },
-      instructions: { en: 'A frame produces options. Move the slider to see what happens to the number and usefulness of options when you add or remove constraints. This is the core trade-off of chapter 5, shown before you read it.', de: 'Ein Frame erzeugt Optionen. Bewege den Regler und sieh, was mit Zahl und Brauchbarkeit der Optionen passiert, wenn du Constraints hinzufügst oder wegnimmst. Das ist der zentrale Trade-off aus Kapitel 5, gezeigt, bevor du es liest.' },
+      title: 'The constraint dial',
+      instructions: 'A frame produces options. Move the slider and watch what happens to the number and usefulness of options as you add or remove constraints. This is the core trade-off of chapter 5, shown before you read it.',
       render: renderDial,
     },
     caseStudy: {
-      title: { en: 'Halicin: the discovery the headlines got wrong', de: 'Halicin: die Entdeckung, die die Schlagzeilen falsch erzählten' },
-      body: {
-        en: '<p>Antibiotic resistance kills hundreds of thousands of people a year, and conventional drug search looks for molecules that structurally resemble known antibiotics. That search space was exhausted. Regina Barzilay and Jim Collins at MIT changed the question: not “what looks like an antibiotic” but “what kills bacteria”. They trained a model on about 2,300 compounds with known effects, then let it scan huge molecule databases. One candidate stood out; they named it halicin.</p><p>The press framed it as a victory of machine over human. The authors read it the other way round. Humans defined the problem, chose the training data, picked the databases, and afterwards explained why the molecule worked. The algorithm executed inside a frame it could not have produced.</p>',
-        de: '<p>Antibiotikaresistenzen töten jedes Jahr Hunderttausende, und die klassische Wirkstoffsuche sucht Moleküle, die bekannten Antibiotika strukturell ähneln. Dieser Suchraum war ausgeschöpft. Regina Barzilay und Jim Collins am MIT änderten die Frage: nicht „was sieht aus wie ein Antibiotikum“, sondern „was tötet Bakterien“. Sie trainierten ein Modell an rund 2.300 Verbindungen mit bekannter Wirkung und ließen es riesige Moleküldatenbanken durchsuchen. Ein Kandidat stach heraus; sie nannten ihn Halicin.</p><p>Die Presse erzählte es als Sieg der Maschine über den Menschen. Die Autoren lesen es umgekehrt: Menschen definierten das Problem, wählten die Trainingsdaten, bestimmten die Datenbanken und erklärten hinterher, warum das Molekül wirkt. Der Algorithmus arbeitete innerhalb eines Frames, den er selbst nicht hätte hervorbringen können.</p>'
-      },
-      lesson: { en: 'Watch for this pattern in every “AI did X” story: who set the frame the machine searched within?', de: 'Achte bei jeder „KI hat X geschafft“-Geschichte auf dieses Muster: Wer hat den Frame gesetzt, in dem die Maschine gesucht hat?' },
+      title: 'Halicin: the discovery the headlines got wrong',
+      body: '<p>Antibiotic resistance kills hundreds of thousands of people a year, and conventional drug search looks for molecules that structurally resemble known antibiotics. That search space was largely exhausted. Regina Barzilay and Jim Collins at MIT changed the question: not "what looks like an antibiotic" but "what kills bacteria". They trained a model on about 2,300 compounds with known effects, then let it scan large molecule libraries. One candidate stood out; they named it halicin.</p><p>The press told it as a victory of machine over human. The authors read it the other way round. Humans defined the problem, chose the training data, picked the databases, and afterwards explained why the molecule worked. The algorithm searched inside a frame it could not have produced.</p>',
+      lesson: 'In every "AI did X" story, ask: who set the frame the machine searched within?',
     },
     reflection: {
-      intro: { en: 'Before you go deeper, capture your starting point. You will compare it with your view at the end.', de: 'Bevor du tiefer einsteigst, halte deinen Ausgangspunkt fest. Am Ende vergleichst du ihn mit deiner Sicht dann.' },
+      intro: 'Capture your starting point now; you will compare it with your view at the end.',
       prompts: [
-        { en: 'Pick one decision you are facing right now. Which frame are you using, and could you name it in one phrase?', de: 'Nimm eine Entscheidung, vor der du gerade stehst. Welchen Frame benutzt du, und kannst du ihn in einem Ausdruck benennen?' },
-        { en: 'What do you expect the book to get wrong? Write the objection down now, before the chapters argue you out of it.', de: 'Was erwartest du, dass das Buch falsch sieht? Schreib den Einwand jetzt auf, bevor die Kapitel ihn dir ausreden.' },
+        'Pick one decision you are facing right now. Which frame are you using, and can you name it in one phrase?',
+        'What do you expect the book to get wrong? Write the objection down before the chapters argue you out of it.',
       ],
-      placeholder: { en: 'My current frame for this decision is…', de: 'Mein aktueller Frame für diese Entscheidung ist …' },
+      placeholder: 'My current frame for this decision is…',
     },
     quiz: [
-      { q: { en: 'A colleague says: “We need more data before we can decide.” What would the authors most likely reply?', de: 'Eine Kollegin sagt: „Wir brauchen mehr Daten, bevor wir entscheiden können.“ Was würden die Autoren am ehesten entgegnen?' },
-        options: [{ en: 'Agreed, data is the foundation of every decision.', de: 'Einverstanden, Daten sind die Grundlage jeder Entscheidung.' }, { en: 'Data only becomes an option inside a frame; first check which mental model you are using.', de: 'Daten werden erst innerhalb eines Frames zu Optionen; prüf zuerst, welches mentale Modell du benutzt.' }, { en: 'Trust your gut instead, data misleads.', de: 'Vertrau lieber dem Bauch, Daten täuschen.' }, { en: 'Let an algorithm decide, it is more objective.', de: 'Lass einen Algorithmus entscheiden, der ist objektiver.' }],
-        answer: 1, explain: { en: 'The book rejects both the hyper-rationalist (option 4) and the emotionalist (option 3) shortcut. Data matters, but the frame decides what the data means and which options it opens.', de: 'Das Buch lehnt sowohl die hyperrationalistische (Option 4) als auch die emotionalistische (Option 3) Abkürzung ab. Daten zählen, aber der Frame entscheidet, was sie bedeuten und welche Optionen sie eröffnen.' } },
-      { q: { en: 'Which trio describes applying a frame?', de: 'Welches Trio beschreibt das Anwenden eines Frames?' },
-        options: [{ en: 'Repertoire, repurposing, reinvention', de: 'Repertoire, Repurposing, Reinvention' }, { en: 'Causality, counterfactuals, constraints', de: 'Kausalität, Kontrafaktisches, Constraints' }, { en: 'Variation, education, migration', de: 'Variation, Bildung, Migration' }, { en: 'Mutability, minimal change, consistency', de: 'Mutabilität, minimale Änderung, Konsistenz' }],
-        answer: 1, explain: { en: 'The first trio is reframing, the third is societal pluralism (chapter 8), the fourth are the principles for choosing constraints (chapter 5).', de: 'Das erste Trio ist Reframing, das dritte gesellschaftlicher Pluralismus (Kapitel 8), das vierte sind die Prinzipien zur Wahl von Constraints (Kapitel 5).' } },
-      { q: { en: 'How does “framing” in this book differ from Kahneman and Tversky’s framing effect?', de: 'Wie unterscheidet sich „Framing“ in diesem Buch vom Framing-Effekt bei Kahneman und Tversky?' },
-        options: [{ en: 'It is the same concept under a new name.', de: 'Es ist dasselbe Konzept unter neuem Namen.' }, { en: 'Kahneman studied a bias in how outcomes are worded; the authors mean the deliberate choice of a mental model before deciding.', de: 'Kahneman untersuchte eine Verzerrung durch die Formulierung von Ergebnissen; die Autoren meinen die bewusste Wahl eines mentalen Modells vor der Entscheidung.' }, { en: 'Kahneman means a capability, the authors mean a flaw.', de: 'Kahneman meint eine Fähigkeit, die Autoren einen Fehler.' }, { en: 'The authors only apply it to politics.', de: 'Die Autoren wenden es nur auf Politik an.' }],
-        answer: 1, explain: { en: 'Same word, different object. For Kahneman framing is something that happens to you; here it is something you do.', de: 'Gleiches Wort, anderer Gegenstand. Bei Kahneman passiert Framing mit dir; hier ist es etwas, das du tust.' } },
-      { q: { en: 'Which statement about reframing is consistent with the book?', de: 'Welche Aussage über Reframing ist mit dem Buch vereinbar?' },
-        options: [{ en: 'Reframe as often as possible to stay agile.', de: 'So oft wie möglich reframen, um beweglich zu bleiben.' }, { en: 'Reframing improves with practice like any skill.', de: 'Reframing wird wie jede Fähigkeit durch Übung besser.' }, { en: 'Reframe rarely, when circumstances have changed; start with your repertoire, invent only as a last resort.', de: 'Selten reframen, wenn sich die Umstände geändert haben; mit dem Repertoire beginnen, erfinden nur als letztes Mittel.' }, { en: 'Only geniuses can reframe.', de: 'Nur Genies können reframen.' }],
-        answer: 2, explain: { en: 'Frequent switching disorients; practice helps applying frames, not switching them; and the book insists that reframers are ordinary people everywhere.', de: 'Häufiges Wechseln desorientiert; Übung hilft beim Anwenden, nicht beim Wechseln; und das Buch betont, dass Reframer gewöhnliche Menschen überall sind.' } },
-      { q: { en: 'What is the single kind of frame the authors call bad?', de: 'Welche einzige Art von Frame nennen die Autoren schlecht?' },
-        options: [{ en: 'A frame that turns out to be factually wrong', de: 'Ein Frame, der sich als sachlich falsch erweist' }, { en: 'A frame that denies the existence of other frames', de: 'Ein Frame, der die Existenz anderer Frames leugnet' }, { en: 'A frame borrowed from another domain', de: 'Ein Frame, der aus einem anderen Feld entliehen ist' }, { en: 'A frame with too many constraints', de: 'Ein Frame mit zu vielen Constraints' }],
-        answer: 1, explain: { en: 'Wrong frames can be argued against but should be allowed to exist; the one exception is the frame that abolishes pluralism itself (chapter 8, echoing Popper’s paradox of tolerance).', de: 'Falsche Frames darf man bekämpfen, sie sollen aber existieren dürfen; die eine Ausnahme ist der Frame, der den Pluralismus selbst abschafft (Kapitel 8, in Anlehnung an Poppers Toleranzparadox).' } },
+      { case: '<p>In the early 2000s the Oakland Athletics had one of the smallest payrolls in Major League Baseball. Traditional scouts judged players by build, speed and batting average. General manager Billy Beane and his assistant Paul DePodesta asked instead which traits actually produce runs, and found that on-base percentage was cheap on the market relative to its effect on winning. The statistic itself had long been public.</p>',
+        q: 'What does this case show about the relation between data and decisions?',
+        options: [
+          { text: 'The Athletics won because they gathered more and better statistics than rival clubs.', why: 'Wrong: the key numbers were public. The data-first view assumes information decides by itself; here the same data meant something new only under a new model.' },
+          { text: 'The scouts failed because they relied on gut instinct instead of looking at numbers.', why: 'Wrong: the scouts used a model too, and batting average is a number. Their problem was not gut versus data but a frame that valued the wrong traits.' },
+          { text: 'A new idea of what wins games turned existing statistics into affordable options.', why: 'Right: the causal model (runs come from getting on base) decided which data mattered and which players became affordable options.' },
+          { text: 'The tight budget was the real source of success, because scarcity forces smart choices.', why: 'Wrong: the budget pushed the search, but a constraint alone produces no option. Without the causal model, cheap players are just cheap.' },
+        ],
+        answer: 2,
+        explain: 'Data becomes an option only inside a frame. When everyone has the same information, the advantage lies in the model that interprets it.' },
+      { case: '<p>In a 1981 paper in Science, Amos Tversky and Daniel Kahneman described an "Asian disease" expected to kill 600 people. One group chose between a sure "200 people will be saved" and a gamble; 72 percent took the sure option. A second group saw the same outcome as "400 people will die"; 78 percent now took the gamble. Only the wording differed.</p>',
+        q: 'How does this effect relate to "framing" as the authors of Framers use the word?',
+        options: [
+          { text: 'It is a wording bias over fixed options, not the choice of a model that creates options.', why: 'Right: the options and the facts about the disease were identical. The book means actively choosing a mental model before options exist; this effect is done to you.' },
+          { text: 'The wording gave each group a different mental model of the epidemic, which is the book\'s framing.', why: 'Wrong: both groups had the same model of the disease and the same programmes. A frame in the book\'s sense would yield different programmes, not different labels.' },
+          { text: 'It proves the book\'s point that people should trust careful analysis over their intuition.', why: 'Wrong: the study shows a reasoning flaw, but the book is not arguing analysis versus intuition. Its question is which model you reason inside.' },
+          { text: 'It shows that framing is mainly a persuasion tool used by politicians and marketers.', why: 'Wrong: wording can persuade, which is why the effect matters, but that is the communication sense of framing, not the cognitive one the book develops.' },
+        ],
+        answer: 0,
+        explain: 'Same word, different object: the framing effect happens to you when fixed options are worded; framing in the book is something you do to generate options.' },
+      { case: '<p>In 1931 Harry Beck, an engineering draughtsman who had worked in the London Underground Signals Office, drew a new Tube map on his own initiative. Inspired by electrical circuit diagrams, he used straight lines, spaced stations roughly evenly and dropped true distances. The publicity department first found it too radical. After a small trial run, the 1933 edition proved so popular it was reprinted within a month.</p>',
+        q: 'What does Beck\'s map illustrate about what a frame is?',
+        options: [
+          { text: 'A less accurate picture of London that riders tolerated because it was easier to read.', why: 'Wrong: this judges the map by geography. It is accurate about what riders need, the order of stations and changes; distance matters for a walker, not a passenger.' },
+          { text: 'A neutral record of the network, because it showed only facts and left out opinions.', why: 'Wrong: every inclusion and omission was a choice. Dropping distance was a judgement about what matters, which is exactly the work a frame does.' },
+          { text: 'Proof that simpler models are better models, so the fewer details the better.', why: 'Wrong: the map fits a rider\'s task. For a cyclist planning a route the dropped distances mislead. A frame is judged by fit to purpose, not by simplicity.' },
+          { text: 'A model that keeps what riders need, such as interchanges, and drops the rest.', why: 'Right: a frame is a simplification that decides what counts and what can be ignored. Its value lies in fit to a purpose, not completeness.' },
+        ],
+        answer: 3,
+        explain: 'A frame is not a copy of reality but a deliberate selection. Ask what it keeps, what it drops, and for which purpose.' },
+      { case: '<p>In 1849 John Snow argued that cholera spreads through contaminated water, while most authorities blamed miasma, foul air from filth. When cholera struck Soho in 1854, Snow mapped deaths around the Broad Street pump and noted that workers at a nearby brewery, who drank beer rather than pump water, were spared. The parish removed the pump handle. The Board of Health still attributed the outbreak to miasma.</p>',
+        q: 'Why did Snow\'s frame point to the pump handle when the miasma frame did not?',
+        options: [
+          { text: 'He had collected more and better data than the officials who held to miasma.', why: 'Wrong: the Board had access to the same deaths and his findings, yet kept miasma. The data pointed to the pump only for someone holding the water model.' },
+          { text: 'His causal model named a route, the water, and so singled out one feasible intervention.', why: 'Right: causality (water carries the disease), a telling comparison (the spared brewery workers) and a constraint (one pump, one handle) combined into a concrete option.' },
+          { text: 'Plotting the deaths on a map revealed the cause on its own, without any theory.', why: 'Wrong: a map shows clustering, not cause. Snow read the cluster as a pump effect because his frame said water; a miasma reader sees a foul neighbourhood.' },
+          { text: 'Miasma was a frame that could not generate any actions against the disease at all.', why: 'Wrong: miasma also produced options, such as removing filth and smells. It generated poorly fitting options, which makes it a misfit, not a frame without output.' },
+        ],
+        answer: 1,
+        explain: 'Frames do not just explain; through cause, comparison and constraint they generate options. Different frames over the same facts yield different actions.' },
+      { case: '<p>From 1831 to 1836 Robert FitzRoy captained HMS Beagle while Charles Darwin sailed as naturalist; the two often discussed what Darwin observed. In the official 1839 account, FitzRoy added a chapter of remarks on the Deluge, reading geology in the light of the biblical flood. Darwin drew on the voyage in building the theory of natural selection he published in 1859. FitzRoy came to oppose it publicly.</p>',
+        q: 'Which lesson fits the book\'s view of frames and pluralism?',
+        options: [
+          { text: 'FitzRoy held a bad frame, since a religious model has no place in reading nature.', why: 'Wrong: the book says there are no bad frames, only misfits. A frame becomes the exception only when it denies other frames the right to exist.' },
+          { text: 'Pluralism means both readings of the geology were equally valid as explanations.', why: 'Wrong: pluralism values many frames, not equal fit. Frames differ in how well they explain; the open contest between them is what exposes the misfit.' },
+          { text: 'Shared observations could not settle it; an open contest between rival frames had to.', why: 'Right: one voyage fed two models. Because both could be published and argued over, the better fitting one could prevail. Pluralism is how frames get corrected.' },
+          { text: 'With more careful observation FitzRoy would have reached Darwin\'s conclusion himself.', why: 'Wrong: this assumes data dictates the model. FitzRoy discussed much of the same material with Darwin; his frame decided what it meant.' },
+        ],
+        answer: 2,
+        explain: 'Evidence becomes an argument only inside a frame. Progress needs several frames competing in the open, not one frame that everyone must share.' },
     ],
     flashcards: [
-      { front: { en: 'Frame', de: 'Frame' }, back: { en: 'A mental model that makes part of the world intelligible: it says what matters, what causes what, and what options exist.', de: 'Ein mentales Modell, das einen Ausschnitt der Welt verständlich macht: Es sagt, was zählt, was was verursacht und welche Optionen es gibt.' } },
-      { front: { en: 'The three C', de: 'Die drei C' }, back: { en: 'Causality, counterfactuals, constraints: the elements of applying a frame.', de: 'Kausalität, Kontrafaktisches, Constraints: die Elemente des Anwendens eines Frames.' } },
-      { front: { en: 'Reframing', de: 'Reframing' }, back: { en: 'Switching the mental model: repertoire, repurposing or reinvention. Rare, risky, not improved by repetition.', de: 'Das mentale Modell wechseln: Repertoire, Repurposing oder Reinvention. Selten, riskant, durch Wiederholung nicht besser.' } },
-      { front: { en: '“Think outside the box”?', de: '„Think outside the box“?' }, back: { en: 'A misleading metaphor. We cannot think without a frame; we can only choose a better box. Constraints are what make imagination useful.', de: 'Eine irreführende Metapher. Wir können nicht ohne Frame denken; wir können nur eine bessere Box wählen. Constraints machen Vorstellungskraft erst brauchbar.' } },
-      { front: { en: 'Hyper-rationalists vs. emotionalists', de: 'Hyperrationalisten vs. Emotionalisten' }, back: { en: 'The two dead ends the book argues against: outsource decisions to machines, or to the gut. Framing is the third way.', de: 'Die zwei Sackgassen, gegen die das Buch argumentiert: Entscheidungen an Maschinen auslagern oder an den Bauch. Framing ist der dritte Weg.' } },
-      { front: { en: 'The only bad frame', de: 'Der einzige schlechte Frame' }, back: { en: 'One that denies the legitimacy or existence of other frames.', de: 'Einer, der die Legitimität oder Existenz anderer Frames leugnet.' } },
+      { front: 'Frame', back: 'A mental model that makes part of the world intelligible: what matters, what causes what, and which options exist.' },
+      { front: 'The three C', back: 'Causality, counterfactuals, constraints: the elements of applying a frame.' },
+      { front: 'Reframing', back: 'Switching the mental model: repertoire, repurposing or reinvention. Rare, risky, not improved by repetition.' },
+      { front: 'Framing effect vs. framing', back: 'Kahneman and Tversky: a bias caused by wording fixed options. Framers: the deliberate choice of a model that generates options.' },
+      { front: 'The only bad frame', back: 'One that denies the legitimacy or existence of other frames.' },
     ],
     critique: [
-      { claim: { en: 'Machines cannot frame; only humans can generate causal models, counterfactuals and constraints.', de: 'Maschinen können nicht framen; nur Menschen erzeugen kausale Modelle, Kontrafaktisches und Constraints.' },
-        challenge: { en: 'Written in 2020, before large language models. Today a model will propose alternative framings, generate counterfactual scenarios and suggest constraints on request. The defensible version of the claim is narrower: machines do not <em>own</em> the choice of frame, the goal, or the responsibility. Keep this distinction in mind for every chapter.', de: 'Geschrieben 2020, vor den großen Sprachmodellen. Heute schlägt ein Modell auf Zuruf alternative Framings vor, erzeugt kontrafaktische Szenarien und nennt Constraints. Die haltbare Version der These ist enger: Maschinen <em>besitzen</em> die Wahl des Frames, das Ziel und die Verantwortung nicht. Behalte diese Unterscheidung in jedem Kapitel im Blick.' } },
-      { claim: { en: 'The examples (halicin, Apollo, Entebbe, Messner) show the power of framing.', de: 'Die Beispiele (Halicin, Apollo, Entebbe, Messner) zeigen die Kraft des Framings.' },
-        challenge: { en: 'They show successful framing. Failed reframings that looked equally smart beforehand are not sampled. A theory that explains success after the fact needs to predict something; ask in each chapter what the frame concept would forbid.', de: 'Sie zeigen gelungenes Framing. Gescheiterte Reframings, die vorher genauso klug aussahen, kommen nicht vor. Eine Theorie, die Erfolg im Nachhinein erklärt, muss etwas vorhersagen; frag in jedem Kapitel, was das Frame-Konzept verbieten würde.' } },
-      { claim: { en: '“Frame” is a new lens on cognition.', de: '„Frame“ ist eine neue Linse auf das Denken.' },
-        challenge: { en: 'Goffman (1974) analysed frames sociologically, Weick called the organisational version sensemaking, Pearl formalised counterfactual causality. The book’s contribution is the synthesis into a practical toolkit and the normative argument for pluralism, not the concept itself. Knowing this protects you from overselling it.', de: 'Goffman (1974) analysierte Frames soziologisch, Weick nannte die organisationale Variante Sensemaking, Pearl formalisierte kontrafaktische Kausalität. Der Beitrag des Buchs ist die Synthese zu einem praktischen Werkzeugkasten und das normative Argument für Pluralismus, nicht der Begriff selbst. Das zu wissen schützt dich davor, es zu überverkaufen.' } },
-    ],
-    transfer: [
-      { context: { en: 'Leadership', de: 'Führung' }, prompt: { en: 'Most leadership conflicts are not about facts but about frames (health frame vs. freedom frame, in the book’s pandemic example). Take a current disagreement in your team and write down the frame of each side in one sentence. Does naming them change the conversation?', de: 'Die meisten Führungskonflikte drehen sich nicht um Fakten, sondern um Frames (Gesundheits-Frame vs. Freiheits-Frame im Pandemie-Beispiel des Buchs). Nimm eine aktuelle Meinungsverschiedenheit in deinem Team und schreib den Frame jeder Seite in einem Satz auf. Verändert das Benennen das Gespräch?' } },
-      { context: { en: 'AI in organisations', de: 'KI in Organisationen' }, prompt: { en: 'A prompt is a frame handed to a machine: it sets causal assumptions, the alternatives to explore and the constraints. Rewrite one prompt you use regularly so that all three are explicit. What changes in the output?', de: 'Ein Prompt ist ein Frame, der einer Maschine übergeben wird: Er setzt Kausalannahmen, die zu erkundenden Alternativen und die Constraints. Schreib einen Prompt, den du regelmäßig nutzt, so um, dass alle drei explizit sind. Was ändert sich im Ergebnis?' } },
-      { context: { en: 'Consulting', de: 'Beratung' }, prompt: { en: 'Clients usually ask for a solution inside their current frame. Before the next diagnostic conversation, prepare one question that surfaces the frame itself (“How must the world work for this plan to succeed?”).', de: 'Kundinnen und Kunden fragen meist nach einer Lösung innerhalb ihres aktuellen Frames. Bereite für das nächste Diagnosegespräch eine Frage vor, die den Frame selbst sichtbar macht („Wie muss die Welt funktionieren, damit dieser Plan aufgeht?“).' } },
+      { claim: 'Machines cannot frame; only humans generate causal models, counterfactuals and constraints.',
+        challenge: 'Written in 2020, before large language models. Today a model proposes alternative framings, counterfactual scenarios and constraints on request. The defensible version is narrower: machines do not <em>own</em> the choice of frame, the goal or the responsibility. Keep this distinction in mind for every chapter.' },
+      { claim: 'The examples (halicin, Apollo, Entebbe, Messner) show the power of framing.',
+        challenge: 'They show successful framing. Failed reframings that looked equally smart beforehand are not sampled. A theory that explains success after the fact should also predict something; ask in each chapter what the frame concept would rule out.' },
+      { claim: '"Frame" is a new lens on cognition.',
+        challenge: 'Goffman (1974) analysed frames sociologically, Weick called the organisational version sensemaking, Pearl formalised counterfactual causality. The book\'s contribution is a practical synthesis and a normative argument for pluralism, not the concept itself. It also says little about power: who decides which frame counts?' },
     ],
     summary: [
-      { en: 'Humans think in frames: mental models that make the world intelligible and generate options.', de: 'Menschen denken in Frames: mentale Modelle, die die Welt verständlich machen und Optionen erzeugen.' },
-      { en: 'Applying a frame uses causality, counterfactuals and constraints; it is fast and trainable.', de: 'Einen Frame anwenden nutzt Kausalität, Kontrafaktisches und Constraints; das ist schnell und trainierbar.' },
-      { en: 'Reframing switches the model (repertoire, repurposing, reinvention); it is rare, risky and not improved by practice.', de: 'Reframing wechselt das Modell (Repertoire, Repurposing, Reinvention); das ist selten, riskant und wird durch Übung nicht besser.' },
-      { en: 'The book positions framing against two dead ends: outsourcing decisions to machines or to the gut.', de: 'Das Buch stellt Framing gegen zwei Sackgassen: Entscheidungen an Maschinen oder an den Bauch auslagern.' },
-      { en: 'Diversity of frames is the central value, for individuals, organisations and societies.', de: 'Vielfalt der Frames ist der zentrale Wert, für Einzelne, Organisationen und Gesellschaften.' },
+      'Humans think in frames: mental models that make the world intelligible and generate options.',
+      'Applying a frame uses causality, counterfactuals and constraints; it is fast and trainable.',
+      'Reframing switches the model (repertoire, repurposing, reinvention); it is rare, risky and not improved by practice.',
+      'Against the two dead ends of algorithm-only and gut-only decisions, the book makes a diversity of frames its central value.',
     ],
     glossary: [
-      { term: { en: 'Frame (mental model)', de: 'Frame (mentales Modell)' }, def: { en: 'A representation of how part of the world works; the lens through which options become visible.', de: 'Eine Darstellung davon, wie ein Ausschnitt der Welt funktioniert; die Linse, durch die Optionen sichtbar werden.' } },
-      { term: { en: 'Framing (in this book)', de: 'Framing (in diesem Buch)' }, def: { en: 'The deliberate choice and application of a mental model before deciding; a capability, not a bias.', de: 'Die bewusste Wahl und Anwendung eines mentalen Modells vor der Entscheidung; eine Fähigkeit, keine Verzerrung.' } },
-      { term: { en: 'Hyper-rationalists / emotionalists', de: 'Hyperrationalisten / Emotionalisten' }, def: { en: 'The two camps the authors reject: decisions by algorithm, or decisions by instinct.', de: 'Die zwei Lager, die die Autoren ablehnen: Entscheidungen per Algorithmus oder per Instinkt.' } },
+      { term: 'Frame (mental model)', def: 'A representation of how part of the world works; the lens through which options become visible.' },
+      { term: 'Framing (in this book)', def: 'The deliberate choice and application of a mental model before deciding; a capability, not a bias.' },
+      { term: 'Hyper-rationalists / emotionalists', def: 'The two camps the authors reject: decisions by algorithm, or decisions by instinct.' },
     ],
   });
 })();

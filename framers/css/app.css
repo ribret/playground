@@ -198,3 +198,12 @@ svg .a-slide { opacity: 0; translate: -30px 0; animation: slideL .7s ease forwar
 svg .a-wiggle { transform-box: fill-box; transform-origin: center; animation: wiggle 1.2s ease-in-out infinite; }
 svg .a-float { animation: float 2.4s ease-in-out infinite; animation-delay: var(--d, 0s); }
 @media (prefers-reduced-motion: reduce) { svg [class^="a-"], svg [class*=" a-"] { animation-duration: .01s !important; animation-delay: 0s !important; } .fc-card { transition: none; } }
+
+/* v2 quiz */
+.vtag { font-size: .75rem; font-weight: 700; color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 2px 8px; }
+.q .qcase { background: var(--paper2); border-left: 3px solid var(--accent); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; font-size: .95rem; }
+.q .qcase p { margin: 0 0 6px; } .q .qcase p:last-child { margin-bottom: 0; }
+.q .opts button { display: flex; flex-direction: column; gap: 6px; }
+.q .opts button .owhy { display: none; font-size: .9rem; color: var(--ink2); border-top: 1px dashed var(--line); padding-top: 6px; }
+.q.answered .opts button .owhy { display: block; }
+.q.answered .opts button:not(.right):not(.picked) { opacity: .85; }
